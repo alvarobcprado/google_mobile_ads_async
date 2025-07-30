@@ -1,35 +1,28 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
-import 'package:google_mobile_ads_async/src/ad_factory.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
-import 'google_mobile_ads_async_test.mocks.dart';
+// --- Mock Classes using Mocktail ---
 
-@GenerateMocks([
-  AdFactory,
-  AsyncAdLoader,
-  BannerAd,
-  InterstitialAd,
-  RewardedAd,
-  LoadAdError,
-])
+class MockAsyncAdLoader extends Mock implements AsyncAdLoader {}
+
+class MockBannerAd extends Mock implements BannerAd {}
+
+class MockInterstitialAd extends Mock implements InterstitialAd {}
+
+class MockRewardedAd extends Mock implements RewardedAd {}
+
+class MockLoadAdError extends Mock implements LoadAdError {}
+
 void main() {
-  group('AsyncAdLoader', () {
-    late MockAdFactory mockAdFactory;
-    late AsyncAdLoader adLoader;
-
-    setUp(() {
-      mockAdFactory = MockAdFactory();
-      adLoader = AsyncAdLoader.withFactory(mockAdFactory);
-    });
-
-    // ... (testes do AsyncAdLoader mantidos aqui)
+  // Register a fallback value for AdRequest, required by mocktail.
+  setUpAll(() {
+    registerFallbackValue(const AdRequest());
   });
 
-  group('AdCacheManager', () {
+  group('AdCacheManager with Mocktail', () {
     late MockAsyncAdLoader mockAdLoader;
     late AdCacheManager cacheManager;
 
@@ -44,11 +37,12 @@ void main() {
 
     test('preloadAd successfully caches an ad', () async {
       final mockAd = MockBannerAd();
-      when(mockAdLoader.loadBannerAd(
-        adUnitId: 'test-banner',
-        size: AdSize.banner,
-        request: null,
-      )).thenAnswer((_) async => mockAd);
+      // Use the function-based `when` from mocktail.
+      when(() => mockAdLoader.loadBannerAd(
+            adUnitId: 'test-banner',
+            size: AdSize.banner,
+            request: any(named: 'request'),
+          )).thenAnswer((_) async => mockAd);
 
       await cacheManager.preloadAd(
         'test-banner',
@@ -62,15 +56,16 @@ void main() {
 
     test('preloadAd does not cache an ad on failure', () async {
       final mockError = MockLoadAdError();
-      when(mockError.message).thenReturn('Failed to load');
-      when(mockError.code).thenReturn(1);
-      when(mockAdLoader.loadBannerAd(
-        adUnitId: 'test-banner-fail',
-        size: AdSize.banner,
-        request: null,
-      )).thenThrow(AdLoadException(mockError));
+      when(() => mockError.message).thenReturn('Failed to load');
+      when(() => mockError.code).thenReturn(1);
+      when(() => mockAdLoader.loadBannerAd(
+            adUnitId: 'test-banner-fail',
+            size: AdSize.banner,
+            request: any(named: 'request'),
+          )).thenThrow(AdLoadException(mockError));
 
-      await cacheManager.preloadAd(
+      // No need to `await` here since we are just checking the side effect.
+      cacheManager.preloadAd(
         'test-banner-fail',
         AdType.banner,
         size: AdSize.banner,
@@ -82,11 +77,11 @@ void main() {
 
     test('getAd returns null for wrong ad type', () async {
       final mockAd = MockBannerAd();
-      when(mockAdLoader.loadBannerAd(
-        adUnitId: 'test-banner',
-        size: AdSize.banner,
-        request: null,
-      )).thenAnswer((_) async => mockAd);
+      when(() => mockAdLoader.loadBannerAd(
+            adUnitId: 'test-banner',
+            size: AdSize.banner,
+            request: any(named: 'request'),
+          )).thenAnswer((_) async => mockAd);
 
       await cacheManager.preloadAd(
         'test-banner',
@@ -100,11 +95,12 @@ void main() {
 
     test('disposeAd removes and disposes the ad', () async {
       final mockAd = MockBannerAd();
-      when(mockAdLoader.loadBannerAd(
-        adUnitId: 'test-banner',
-        size: AdSize.banner,
-        request: null,
-      )).thenAnswer((_) async => mockAd);
+      when(() => mockAd.dispose()).thenAnswer((_) async {});
+      when(() => mockAdLoader.loadBannerAd(
+            adUnitId: 'test-banner',
+            size: AdSize.banner,
+            request: any(named: 'request'),
+          )).thenAnswer((_) async => mockAd);
 
       await cacheManager.preloadAd(
         'test-banner',
@@ -113,7 +109,7 @@ void main() {
       );
 
       cacheManager.disposeAd('test-banner');
-      verify(mockAd.dispose()).called(1);
+      verify(() => mockAd.dispose()).called(1);
       final cachedAd = cacheManager.getAd<BannerAd>('test-banner');
       expect(cachedAd, isNull);
     });

@@ -14,11 +14,12 @@ Além da simplificação do carregamento, o pacote introduzirá um **gerenciador
 - Native (Nativo)
 - App Open (Abertura de App)
 
-**O Problema:** A API oficial exige o gerenciamento de múltiplos callbacks para cada tipo de anúncio, tornando o código verboso e complexo. Além disso, não há uma solução integrada para o gerenciamento de cache de anúncios.
+**O Problema:** A API oficial exige o gerenciamento de múltiplos callbacks para cada tipo de anúncio, tornando o código verboso e complexo. Além disso, não há uma solução integrada para o gerenciamento de cache de anúncios ou para a exibição de anúncios na árvore de widgets de forma declarativa.
 
 **A Solução:**
 1.  Abstrair a complexidade do carregamento em chamadas de método assíncronas e intuitivas (`await GoogleMobileAdsAsync.loadBannerAd(...)`).
-2.  Fornecer um `AdCacheManager` para pré-carregar, armazenar e recuperar anúncios de forma eficiente, desacoplando a lógica de carregamento da lógica de exibição.
+2.  Fornecer um `AdCacheManager` para pré-carregar, armazenar e recuperar anúncios de forma eficiente.
+3.  Oferecer **widgets de UI (wrappers)** para os formatos `Banner` e `Native`, que gerenciam automaticamente o ciclo de vida do carregamento (exibindo estados de `loading` e `error`) e simplificam a integração visual.
 
 ---
 
@@ -34,7 +35,7 @@ Além da simplificação do carregamento, o pacote introduzirá um **gerenciador
 
 ## 3. Arquitetura de Componentes
 
-A arquitetura será composta por dois componentes principais: o `AsyncAdLoader` e o `AdCacheManager`.
+A arquitetura será composta por três componentes principais: o `AsyncAdLoader`, o `AdCacheManager` e os `Ad Wrappers`.
 
 ### Componente 1: `AsyncAdLoader`
 
@@ -70,6 +71,16 @@ Uma camada de alto nível para gerenciar o ciclo de vida dos anúncios.
   void disposeAd(String adUnitId);
   ```
 - **Lógica Interna:** Utilizará um `Map<String, Ad>` para armazenar os anúncios carregados, usando o `adUnitId` como chave. Ele chamará os métodos do `AsyncAdLoader` para realizar o carregamento.
+
+### Componente 3: Widgets de Exibição (Ad Wrappers)
+
+Para simplificar a integração dos anúncios diretamente na árvore de widgets do Flutter, o pacote fornecerá uma camada de UI.
+
+- **Responsabilidade:** Gerenciar o estado de carregamento de um anúncio (Banner ou Native) e renderizar a UI correspondente para cada estado: carregando, erro ou sucesso.
+- **Componentes Principais:**
+    - **`AdWidgetWrapper` (Abstrato):** Um `StatefulWidget` base que contém a lógica comum para carregar um anúncio, gerenciar o estado (`loading`, `loaded`, `error`) e lidar com o `dispose`.
+    - **`BannerAdWidget`:** Um wrapper para anúncios de banner. Ele gerencia o carregamento e o dimensionamento do `BannerAd`, permitindo que o desenvolvedor forneça builders customizados para os estados de `loading` e `error`.
+    - **`NativeAdWidget`:** Um wrapper para anúncios nativos. Ele permite que o desenvolvedor forneça um `nativeAdBuilder` para construir uma UI completamente customizada a partir do objeto `NativeAd` carregado.
 
 ### Diagrama de Fluxo (Pré-carregamento)
 
@@ -110,18 +121,21 @@ A implementação será dividida nas seguintes etapas:
   - Criar a classe `AdCacheManager` com a lógica para pré-carregar, armazenar em um `Map` e recuperar anúncios.
   - Garantir o descarte (`dispose`) correto dos anúncios para evitar vazamentos de memória.
 
-- [x] **Etapa 5: Desenvolver Widgets de Exibição (Opcional)**
-  - Manter o `NativeAdCard` e, se necessário, criar outros widgets auxiliares para diferentes tipos de anúncios.
+- [X] **Etapa 5: Desenvolver Widgets de Exibição (Wrappers)**
+  - Criar a classe base abstrata `AdWidgetWrapper` para gerenciar o estado do ciclo de vida do anúncio.
+  - Implementar o `BannerAdWidget` para exibir anúncios de banner com builders de `loading`/`error`.
+  - Implementar o `NativeAdWidget` com um `nativeAdBuilder` para renderização customizada.
+  - Refatorar o `NativeAdCard` existente para que utilize o `NativeAdWidget` internamente.
 
-- [x] **Etapa 6: Documentação da API**
-  - Atualizar todos os comentários de documentação (`///`) para cobrir a nova API expandida, incluindo o `AdCacheManager` e todos os novos métodos de carregamento.
+- [X] **Etapa 6: Documentação da API**
+  - Atualizar todos os comentários de documentação (`///`) para cobrir a nova API expandida, incluindo os **Ad Wrappers**, o `AdCacheManager` e todos os novos métodos de carregamento.
 
-- [x] **Etapa 7: Criar um Exemplo de Uso Abrangente**
-  - Atualizar o aplicativo na pasta `example/` para demonstrar o carregamento simples e o pré-carregamento de múltiplos formatos de anúncio (ex: um banner e um intersticial pré-carregado).
+- [X] **Etapa 7: Criar um Exemplo de Uso Abrangente**
+  - Atualizar o aplicativo na pasta `example/` para demonstrar o carregamento simples, o pré-carregamento e o **uso dos novos `BannerAdWidget` e `NativeAdWidget`**.
 
-- [x] **Etapa 8: Escrever Testes**
+- [X] **Etapa 8: Escrever Testes**
   - Expandir os testes de unidade para cobrir a lógica do `AsyncAdLoader` para todos os tipos de anúncio.
-  - Criar testes específicos para o `AdCacheManager`, mockando o `AsyncAdLoader` para testar a lógica de cache (armazenamento, recuperação e descarte).
+  - Criar testes específicos para o `AdCacheManager` usando `mocktail`.
 
 ---
 
@@ -161,5 +175,29 @@ void showRewardedAd() {
     // Opcional: Tentar carregar o anúncio agora ou mostrar mensagem
     print('Anúncio recompensado não estava pronto.');
   }
+}
+```
+
+**Cenário 3: Integração de UI com Ad Wrappers**
+```dart
+// Em um método build() de um widget
+@override
+Widget build(BuildContext context) {
+  return Column(
+    children: [
+      Text('Conteúdo do App'),
+      BannerAdWidget(
+        adUnitId: 'your_banner_ad_unit_id',
+        size: AdSize.banner,
+        loadingBuilder: (context) => CircularProgressIndicator(),
+        errorBuilder: (context, error) => Text('Erro: $error'),
+      ),
+      NativeAdWidget(
+        adUnitId: 'your_native_ad_unit_id',
+        nativeAdBuilder: (context, ad) => MyCustomNativeAdView(ad: ad),
+        loadingBuilder: (context) => Text('Carregando anúncio nativo...'),
+      ),
+    ],
+  );
 }
 ```
