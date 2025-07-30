@@ -74,13 +74,16 @@ A high-level layer for managing the ad lifecycle.
 
 ### Component 3: Display Widgets (Ad Wrappers)
 
-To simplify the integration of ads directly into the Flutter widget tree, the package will provide a UI layer.
+To simplify the integration of ads directly into the Flutter widget tree, the package provides a UI layer.
 
-- **Responsibility:** Manage the loading state of an ad (Banner or Native) and render the corresponding UI for each state: loading, error, or success.
+- **Responsibility:** Manage the loading state of an ad (Banner or Native) and render the corresponding UI. It supports two flows:
+    1.  **Live Loading:** Using the default constructor, the widget takes an `adUnitId` and loads the ad automatically.
+    2.  **Pre-loaded Ad:** Using the `.fromAd()` named constructor, the widget accepts an already-loaded ad object (e.g., from `AdCacheManager`) and displays it instantly.
 - **Main Components:**
-    - **`AdWidgetWrapper` (Abstract):** A base `StatefulWidget` that contains the common logic for loading an ad, managing state (`loading`, `loaded`, `error`), and handling `dispose`.
-    - **`BannerAdWidget`:** A wrapper for banner ads. It manages the loading and sizing of the `BannerAd`, allowing the developer to provide custom builders for `loading` and `error` states.
-    - **`NativeAdWidget`:** A wrapper for native ads. It allows the developer to provide a `nativeAdBuilder` to construct a completely custom UI from the loaded `NativeAd` object.
+    - **`AdWidgetWrapper` (Abstract):** A base `StatefulWidget` that contains the common logic for both loading flows.
+    - **`BannerAdWidget`:** A wrapper for banner ads with `.fromAd()` for pre-loaded ads.
+    - **`NativeAdWidget`:** A wrapper for native ads with `.fromAd()` for pre-loaded ads.
+
 
 ### Flow Diagram (Preloading)
 

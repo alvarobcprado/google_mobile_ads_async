@@ -9,10 +9,8 @@ typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
 
 /// A widget that loads and displays a [NativeAd].
 ///
-/// This widget simplifies the integration of native ads by managing the ad
-/// lifecycle automatically. It provides a [nativeAdBuilder] to allow for
-
-/// a completely custom UI for the loaded ad.
+/// This widget can either load an ad live or display a pre-loaded ad
+/// provided via the [NativeAdWidget.fromAd] constructor.
 class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
   /// A builder function to create the widget that displays the native ad.
   ///
@@ -22,7 +20,7 @@ class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
   /// Optional factory ID for native ad formats.
   final String? factoryId;
 
-  /// Creates a [NativeAdWidget].
+  /// Creates a [NativeAdWidget] that loads an ad live.
   ///
   /// - [adUnitId]: The ad unit ID for the native ad.
   /// - [nativeAdBuilder]: The builder function to create the ad's UI.
@@ -33,20 +31,28 @@ class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
   /// - [adLoader]: An optional [AsyncAdLoader] to use for loading the ad.
   const NativeAdWidget({
     super.key,
-    required super.adUnitId,
+    required String adUnitId,
     required this.nativeAdBuilder,
     this.factoryId,
     super.request,
     super.loadingBuilder,
     super.errorBuilder,
     super.adLoader,
-  });
+  }) : super(adUnitId: adUnitId);
+
+  /// Creates a [NativeAdWidget] from a pre-loaded [NativeAd].
+  NativeAdWidget.fromAd(
+    NativeAd ad, {
+    super.key,
+    required this.nativeAdBuilder,
+    this.factoryId,
+  }) : super.fromAd(ad: ad);
 
   @override
   Future<NativeAd> loadAd() {
     final loader = adLoader ?? AsyncAdLoader();
     return loader.loadNativeAd(
-      adUnitId: adUnitId,
+      adUnitId: adUnitId!,
       request: request,
       factoryId: factoryId,
     );

@@ -21,6 +21,9 @@ void _preloadAds() {
   final cacheManager = AdCacheManager.instance;
   cacheManager.preloadAd(interstitialAdUnitId, AdType.interstitial);
   cacheManager.preloadAd(rewardedAdUnitId, AdType.rewarded);
+  // Preload ads for the widgets too
+  cacheManager.preloadAd(bannerAdUnitId, AdType.banner, size: AdSize.banner);
+  cacheManager.preloadAd(nativeAdUnitId, AdType.native);
 }
 
 class MyApp extends StatelessWidget {
@@ -60,10 +63,9 @@ class _MyHomePageState extends State<MyHomePage> {
     if (ad != null) {
       ad.show();
       // Preload the next one.
-      _preloadAds();
+      AdCacheManager.instance.preloadAd(interstitialAdUnitId, AdType.interstitial);
     } else {
       _showSnackBar('Interstitial ad is not ready yet.');
-      // Optionally, try to load it now.
     }
   }
 
@@ -74,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _showSnackBar('Reward earned: ${reward.amount} ${reward.type}');
       });
       // Preload the next one.
-      _preloadAds();
+      AdCacheManager.instance.preloadAd(rewardedAdUnitId, AdType.rewarded);
     } else {
       _showSnackBar('Rewarded ad is not ready yet.');
     }
@@ -88,6 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Try to get the cached ads.
+    final cachedBanner = AdCacheManager.instance.getAd<BannerAd>(bannerAdUnitId);
+    final cachedNative = AdCacheManager.instance.getAd<NativeAd>(nativeAdUnitId);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ad Demo'),
@@ -98,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               const Text(
-                'Cached Ads',
+                'Cached Ads (Programmatic)',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
@@ -113,38 +119,43 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const SizedBox(height: 40),
               const Text(
-                'Live-Loaded Ads',
+                'Widget-Based Ads',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              // The NativeAdCard now handles its own loading state.
-              NativeAdCard(
-                adUnitId: nativeAdUnitId,
-                height: 250,
-                loadingBuilder: (context) => const SizedBox(
+              // Use the cached ad if available, otherwise load it live.
+              if (cachedNative != null)
+                NativeAdCard.fromAd(ad: cachedNative, height: 250)
+              else
+                NativeAdCard(
+                  adUnitId: nativeAdUnitId,
                   height: 250,
-                  child: Center(child: CircularProgressIndicator()),
+                  loadingBuilder: (context) => const SizedBox(
+                    height: 250,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  errorBuilder: (context, error) => SizedBox(
+                    height: 250,
+                    child: Center(child: Text('Error: $error')),
+                  ),
                 ),
-                errorBuilder: (context, error) => SizedBox(
-                  height: 250,
-                  child: Center(child: Text('Error: $error')),
-                ),
-              ),
             ],
           ),
         ),
       ),
-      // The BannerAdWidget handles its own loading state.
-      bottomNavigationBar: BannerAdWidget(
-        adUnitId: bannerAdUnitId,
-        size: AdSize.banner,
-        loadingBuilder: (context) => const SizedBox(height: 50),
-        errorBuilder: (context, error) => Container(
-          height: 50,
-          color: Colors.red,
-          child: Center(child: Text('Error: $error')),
-        ),
-      ),
+      // Use the cached ad if available, otherwise load it live.
+      bottomNavigationBar: (cachedBanner != null)
+          ? BannerAdWidget.fromAd(cachedBanner)
+          : BannerAdWidget(
+              adUnitId: bannerAdUnitId,
+              size: AdSize.banner,
+              loadingBuilder: (context) => const SizedBox(height: 50),
+              errorBuilder: (context, error) => Container(
+                height: 50,
+                color: Colors.red,
+                child: Center(child: Text('Error: $error')),
+              ),
+            ),
     );
   }
 

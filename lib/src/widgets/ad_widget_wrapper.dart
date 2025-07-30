@@ -8,7 +8,7 @@ enum _AdState {
   /// The ad is currently being loaded.
   loading,
 
-  /// The ad has been successfully loaded.
+  /// The ad has been successfully loaded or was provided pre-loaded.
   loaded,
 
   /// An error occurred while loading the ad.
@@ -18,32 +18,31 @@ enum _AdState {
 /// A generic, abstract base class for widgets that wrap a Google Mobile Ad.
 ///
 /// This class manages the lifecycle of an ad, from loading to display and
-/// disposal. It handles the different states (loading, loaded, error) and
-/// allows subclasses to define how the ad is loaded and displayed.
+/// disposal. It supports two flows:
+/// 1.  **Live Loading:** When created with the default constructor, it loads an
+///     ad based on an `adUnitId`.
+/// 2.  **Pre-loaded Ad:** When created with a `.fromAd` constructor, it displays
+///     an ad object that has already been loaded.
 abstract class AdWidgetWrapper<T extends Ad> extends StatefulWidget {
-  /// The ad unit ID for the ad to be loaded.
-  final String adUnitId;
+  /// The ad unit ID for the ad. Required for live loading.
+  final String? adUnitId;
 
-  /// The ad request to use when loading the ad.
+  /// The pre-loaded ad object to display.
+  final T? ad;
+
+  /// The ad request to use when loading the ad live.
   final AdRequest? request;
 
   /// A builder function for the loading state.
-  ///
-  /// If null, a [SizedBox.shrink] is used.
   final WidgetBuilder? loadingBuilder;
 
   /// A builder function for the error state.
-  ///
-  /// Provides the error object that occurred during loading.
-  /// If null, a [SizedBox.shrink] is used.
   final Widget Function(BuildContext context, Object error)? errorBuilder;
 
-  /// The ad loader responsible for loading the ad.
-  ///
-  /// If null, a default [AsyncAdLoader] instance is created. This is useful
-  /// for testing, allowing a mock loader to be injected.
+  /// The ad loader used for live loading.
   final AsyncAdLoader? adLoader;
 
+  /// Creates a wrapper that loads an ad live.
   const AdWidgetWrapper({
     super.key,
     required this.adUnitId,
@@ -51,7 +50,17 @@ abstract class AdWidgetWrapper<T extends Ad> extends StatefulWidget {
     this.loadingBuilder,
     this.errorBuilder,
     this.adLoader,
-  });
+  }) : ad = null;
+
+  /// Creates a wrapper that displays a pre-loaded ad.
+  AdWidgetWrapper.fromAd({
+    super.key,
+    required this.ad,
+    this.loadingBuilder,
+    this.errorBuilder,
+  })  : adUnitId = ad?.adUnitId,
+        request = null,
+        adLoader = null;
 
   /// Abstract method that subclasses must implement to load the specific ad type.
   Future<T> loadAd();
@@ -72,12 +81,24 @@ class _AdWidgetWrapperState<T extends Ad> extends State<AdWidgetWrapper<T>> {
   @override
   void initState() {
     super.initState();
-    _load();
+    // If an ad was provided, it's already loaded.
+    if (widget.ad != null) {
+      _ad = widget.ad;
+      _adState = _AdState.loaded;
+    } else {
+      // Otherwise, start the live loading process.
+      _adState = _AdState.loading;
+      _load();
+    }
   }
 
   @override
   void dispose() {
-    _ad?.dispose();
+    // The widget only disposes the ad if it loaded it itself.
+    // Pre-loaded ads passed to `.fromAd` are managed externally.
+    if (widget.ad == null) {
+      _ad?.dispose();
+    }
     super.dispose();
   }
 
