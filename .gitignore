@@ -31,5 +31,3 @@ build/
 # Project-specific files
 .env
 PROJECT.md
-ARCHITECTURE.md
-GEMINI.md
