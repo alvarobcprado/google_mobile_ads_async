@@ -1,50 +1,50 @@
-# Arquitetura e Plano de Implementação - Google Mobile Ads Async
+# Architecture and Implementation Plan - Google Mobile Ads Async
 
-## 1. Visão Geral
+## 1. Overview
 
-Este documento descreve a arquitetura e as etapas para a criação do pacote `google_mobile_ads_async`. O objetivo principal é criar um wrapper abrangente em torno do pacote `google_mobile_ads`, transformando sua API baseada em callbacks em uma API moderna e assíncrona (`Future`-based) para todos os formatos de anúncio.
+This document describes the architecture and implementation steps for the `google_mobile_ads_async` package. The main goal is to create a comprehensive wrapper around the `google_mobile_ads` package, transforming its callback-based API into a modern, asynchronous (`Future`-based) API for all ad formats.
 
-Além da simplificação do carregamento, o pacote introduzirá um **gerenciador de pré-carregamento (cache)**, permitindo que os anúncios sejam carregados em segundo plano e exibidos instantaneamente quando necessário, melhorando a experiência do usuário e a performance do aplicativo.
+In addition to simplifying ad loading, the package will introduce a **pre-loading (cache) manager**, allowing ads to be loaded in the background and displayed instantly when needed, improving user experience and application performance.
 
-**Formatos de Anúncio Suportados:**
+**Supported Ad Formats:**
 - Banner
 - Interstitial
-- Rewarded (Recompensado)
-- Rewarded Interstitial (Recompensado Intersticial)
-- Native (Nativo)
-- App Open (Abertura de App)
+- Rewarded
+- Rewarded Interstitial
+- Native
+- App Open
 
-**O Problema:** A API oficial exige o gerenciamento de múltiplos callbacks para cada tipo de anúncio, tornando o código verboso e complexo. Além disso, não há uma solução integrada para o gerenciamento de cache de anúncios ou para a exibição de anúncios na árvore de widgets de forma declarativa.
+**The Problem:** The official API requires managing multiple callbacks for each ad type, making the code verbose and complex. Furthermore, there is no integrated solution for ad cache management or for declaratively displaying ads in the widget tree.
 
-**A Solução:**
-1.  Abstrair a complexidade do carregamento em chamadas de método assíncronas e intuitivas (`await GoogleMobileAdsAsync.loadBannerAd(...)`).
-2.  Fornecer um `AdCacheManager` para pré-carregar, armazenar e recuperar anúncios de forma eficiente.
-3.  Oferecer **widgets de UI (wrappers)** para os formatos `Banner` e `Native`, que gerenciam automaticamente o ciclo de vida do carregamento (exibindo estados de `loading` e `error`) e simplificam a integração visual.
-
----
-
-## 2. Princípios Fundamentais
-
-- **Simplicidade (Simplicity):** A API pública deve ser mínima e intuitiva.
-- **Segurança de Tipos (Type Safety):** Utilizar tipos genéricos e específicos do Dart (`Future<BannerAd>`, `Future<InterstitialAd>`) para garantir clareza e segurança.
-- **Gerenciamento de Erros (Robust Error Handling):** Encapsular falhas de carregamento em exceções claras (`AdLoadException`).
-- **Eficiência (Efficiency):** Permitir o pré-carregamento de anúncios para minimizar a latência de exibição.
-- **Não Invasivo (Non-Intrusive):** Após o carregamento, o desenvolvedor terá acesso total ao objeto de anúncio original do `google_mobile_ads`.
+**The Solution:**
+1.  Abstract the complexity of loading into intuitive, asynchronous method calls (`await GoogleMobileAdsAsync.loadBannerAd(...)`).
+2.  Provide an `AdCacheManager` to efficiently preload, store, and retrieve ads.
+3.  Offer **UI widgets (wrappers)** for the `Banner` and `Native` formats, which automatically manage the loading lifecycle (displaying `loading` and `error` states) and simplify visual integration.
 
 ---
 
-## 3. Arquitetura de Componentes
+## 2. Core Principles
 
-A arquitetura será composta por três componentes principais: o `AsyncAdLoader`, o `AdCacheManager` e os `Ad Wrappers`.
+- **Simplicity:** The public API should be minimal and intuitive.
+- **Type Safety:** Use generic and specific Dart types (`Future<BannerAd>`, `Future<InterstitialAd>`) to ensure clarity and safety.
+- **Robust Error Handling:** Encapsulate loading failures in clear exceptions (`AdLoadException`).
+- **Efficiency:** Allow pre-loading of ads to minimize display latency.
+- **Non-Intrusive:** After loading, the developer will have full access to the original ad object from `google_mobile_ads`.
 
-### Componente 1: `AsyncAdLoader`
+---
 
-A camada base que converte os callbacks do `google_mobile_ads` em `Future`s.
+## 3. Component Architecture
 
-- **Responsabilidade:** Orquestrar o processo de carregamento para cada tipo de anúncio.
-- **Métodos Principais:**
+The architecture will consist of three main components: `AsyncAdLoader`, `AdCacheManager`, and `Ad Wrappers`.
+
+### Component 1: `AsyncAdLoader`
+
+The base layer that converts `google_mobile_ads` callbacks into `Future`s.
+
+- **Responsibility:** Orchestrate the loading process for each ad type.
+- **Main Methods:**
   ```dart
-  // Um método para cada tipo de anúncio
+  // One method for each ad type
   Future<BannerAd> loadBannerAd(...)
   Future<InterstitialAd> loadInterstitialAd(...)
   Future<RewardedAd> loadRewardedAd(...)
@@ -52,98 +52,98 @@ A camada base que converte os callbacks do `google_mobile_ads` em `Future`s.
   Future<NativeAd> loadNativeAd(...)
   Future<AppOpenAd> loadAppOpenAd(...)
   ```
-- **Lógica Interna:** Cada método usará um `Completer` para encapsular a lógica de `onAdLoaded` e `onAdFailedToLoad`, retornando um `Future` que resolve com o anúncio ou lança uma `AdLoadException`.
+- **Internal Logic:** Each method will use a `Completer` to wrap the `onAdLoaded` and `onAdFailedToLoad` logic, returning a `Future` that resolves with the ad or throws an `AdLoadException`.
 
-### Componente 2: `AdCacheManager`
+### Component 2: `AdCacheManager`
 
-Uma camada de alto nível para gerenciar o ciclo de vida dos anúncios.
+A high-level layer for managing the ad lifecycle.
 
-- **Responsabilidade:** Pré-carregar, armazenar e fornecer anúncios.
-- **Métodos Principais:**
+- **Responsibility:** Preload, store, and provide ads.
+- **Main Methods:**
   ```dart
-  // Inicia o carregamento de um anúncio e o armazena no cache
+  // Starts loading an ad and stores it in the cache
   Future<void> preloadAd(String adUnitId, AdType type, {AdRequest? request});
 
-  // Recupera um anúncio pré-carregado do cache
+  // Retrieves a preloaded ad from the cache
   T? getAd<T extends Ad>(String adUnitId);
 
-  // Remove um anúncio do cache
+  // Removes an ad from the cache
   void disposeAd(String adUnitId);
   ```
-- **Lógica Interna:** Utilizará um `Map<String, Ad>` para armazenar os anúncios carregados, usando o `adUnitId` como chave. Ele chamará os métodos do `AsyncAdLoader` para realizar o carregamento.
+- **Internal Logic:** It will use a `Map<String, Ad>` to store loaded ads, using the `adUnitId` as the key. It will call `AsyncAdLoader` methods to perform the loading.
 
-### Componente 3: Widgets de Exibição (Ad Wrappers)
+### Component 3: Display Widgets (Ad Wrappers)
 
-Para simplificar a integração dos anúncios diretamente na árvore de widgets do Flutter, o pacote fornecerá uma camada de UI.
+To simplify the integration of ads directly into the Flutter widget tree, the package will provide a UI layer.
 
-- **Responsabilidade:** Gerenciar o estado de carregamento de um anúncio (Banner ou Native) e renderizar a UI correspondente para cada estado: carregando, erro ou sucesso.
-- **Componentes Principais:**
-    - **`AdWidgetWrapper` (Abstrato):** Um `StatefulWidget` base que contém a lógica comum para carregar um anúncio, gerenciar o estado (`loading`, `loaded`, `error`) e lidar com o `dispose`.
-    - **`BannerAdWidget`:** Um wrapper para anúncios de banner. Ele gerencia o carregamento e o dimensionamento do `BannerAd`, permitindo que o desenvolvedor forneça builders customizados para os estados de `loading` e `error`.
-    - **`NativeAdWidget`:** Um wrapper para anúncios nativos. Ele permite que o desenvolvedor forneça um `nativeAdBuilder` para construir uma UI completamente customizada a partir do objeto `NativeAd` carregado.
+- **Responsibility:** Manage the loading state of an ad (Banner or Native) and render the corresponding UI for each state: loading, error, or success.
+- **Main Components:**
+    - **`AdWidgetWrapper` (Abstract):** A base `StatefulWidget` that contains the common logic for loading an ad, managing state (`loading`, `loaded`, `error`), and handling `dispose`.
+    - **`BannerAdWidget`:** A wrapper for banner ads. It manages the loading and sizing of the `BannerAd`, allowing the developer to provide custom builders for `loading` and `error` states.
+    - **`NativeAdWidget`:** A wrapper for native ads. It allows the developer to provide a `nativeAdBuilder` to construct a completely custom UI from the loaded `NativeAd` object.
 
-### Diagrama de Fluxo (Pré-carregamento)
+### Flow Diagram (Preloading)
 
 ```
 Developer App      AdCacheManager        AsyncAdLoader         google_mobile_ads
       |                  |                     |                       |
       |-- preloadAd() -->|                     |                       |
       |                  |-- load<AdType>() -->|                       |
-      |                  |                     |-- <AdType>.load() --->| (com callbacks)
+      |                  |                     |-- <AdType>.load() --->| (with callbacks)
       |                  |                     |                       |
       |                  |                     |<-- onAdLoaded(ad) ----|
       |                  |<-- Future<Ad> ------|                       |
-      |                  |-- (Armazena 'ad' no Map)
+      |                  |-- (Stores 'ad' in Map)
       |                  |
-      | (mais tarde)     |
+      | (later)          |
       |                  |
       |-- getAd() ------>|
-      |<-- (Retorna 'ad' do Map)
+      |<-- (Returns 'ad' from Map)
       |
 ```
 
 ---
 
-## 4. Etapas de Implementação
+## 4. Implementation Steps
 
-A implementação será dividida nas seguintes etapas:
+The implementation will be divided into the following steps:
 
-- [x] **Etapa 1: Configuração do Projeto**
-  - Garantir que a dependência do `google_mobile_ads` está atualizada.
+- [x] **Step 1: Project Setup**
+  - Ensure the `google_mobile_ads` dependency is up to date.
 
-- [x] **Etapa 2: Generalizar a Exceção**
-  - Manter a `AdLoadException` genérica para ser usada por todos os tipos de carregamento.
+- [x] **Step 2: Generalize the Exception**
+  - Keep `AdLoadException` generic to be used by all loading types.
 
-- [x] **Etapa 3: Implementar o `AsyncAdLoader`**
-  - Criar métodos de carregamento assíncronos para cada tipo de anúncio: `loadBannerAd`, `loadInterstitialAd`, `loadRewardedAd`, `loadRewardedInterstitialAd`, `loadNativeAd` e `loadAppOpenAd`.
+- [x] **Step 3: Implement `AsyncAdLoader`**
+  - Create asynchronous loading methods for each ad type: `loadBannerAd`, `loadInterstitialAd`, `loadRewardedAd`, `loadRewardedInterstitialAd`, `loadNativeAd`, and `loadAppOpenAd`.
 
-- [x] **Etapa 4: Implementar o `AdCacheManager`**
-  - Criar a classe `AdCacheManager` com a lógica para pré-carregar, armazenar em um `Map` e recuperar anúncios.
-  - Garantir o descarte (`dispose`) correto dos anúncios para evitar vazamentos de memória.
+- [x] **Step 4: Implement `AdCacheManager`**
+  - Create the `AdCacheManager` class with logic to preload, store in a `Map`, and retrieve ads.
+  - Ensure correct ad disposal (`dispose`) to prevent memory leaks.
 
-- [X] **Etapa 5: Desenvolver Widgets de Exibição (Wrappers)**
-  - Criar a classe base abstrata `AdWidgetWrapper` para gerenciar o estado do ciclo de vida do anúncio.
-  - Implementar o `BannerAdWidget` para exibir anúncios de banner com builders de `loading`/`error`.
-  - Implementar o `NativeAdWidget` com um `nativeAdBuilder` para renderização customizada.
-  - Refatorar o `NativeAdCard` existente para que utilize o `NativeAdWidget` internamente.
+- [X] **Step 5: Develop Display Widgets (Wrappers)**
+  - Create the abstract base class `AdWidgetWrapper` to manage the ad lifecycle state.
+  - Implement `BannerAdWidget` to display banner ads with `loading`/`error` builders.
+  - Implement `NativeAdWidget` with a `nativeAdBuilder` for custom rendering.
+  - Refactor the existing `NativeAdCard` to use `NativeAdWidget` internally.
 
-- [X] **Etapa 6: Documentação da API**
-  - Atualizar todos os comentários de documentação (`///`) para cobrir a nova API expandida, incluindo os **Ad Wrappers**, o `AdCacheManager` e todos os novos métodos de carregamento.
+- [X] **Step 6: API Documentation**
+  - Update all documentation comments (`///`) to cover the new expanded API, including the **Ad Wrappers**, `AdCacheManager`, and all new loading methods.
 
-- [X] **Etapa 7: Criar um Exemplo de Uso Abrangente**
-  - Atualizar o aplicativo na pasta `example/` para demonstrar o carregamento simples, o pré-carregamento e o **uso dos novos `BannerAdWidget` e `NativeAdWidget`**.
+- [X] **Step 7: Create a Comprehensive Usage Example**
+  - Update the application in the `example/` folder to demonstrate simple loading, preloading, and the **use of the new `BannerAdWidget` and `NativeAdWidget`**.
 
-- [X] **Etapa 8: Escrever Testes**
-  - Expandir os testes de unidade para cobrir a lógica do `AsyncAdLoader` para todos os tipos de anúncio.
-  - Criar testes específicos para o `AdCacheManager` usando `mocktail`.
+- [X] **Step 8: Write Tests**
+  - Expand unit tests to cover the `AsyncAdLoader` logic for all ad types.
+  - Create specific tests for `AdCacheManager` using `mocktail`.
 
 ---
 
-## 5. Exemplo de Uso (Resultado Final)
+## 5. Usage Example (Final Result)
 
-O objetivo é permitir fluxos de trabalho simples e avançados.
+The goal is to enable simple and advanced workflows.
 
-**Cenário 1: Carregamento Simples (Sem Cache)**
+**Scenario 1: Simple Loading (No Cache)**
 ```dart
 Future<void> showInterstitialAd() async {
   try {
@@ -152,50 +152,50 @@ Future<void> showInterstitialAd() async {
     );
     ad.show();
   } on AdLoadException catch (e) {
-    print('Falha ao carregar anúncio intersticial: $e');
+    print('Failed to load interstitial ad: $e');
   }
 }
 ```
 
-**Cenário 2: Pré-carregamento com `AdCacheManager`**
+**Scenario 2: Preloading with `AdCacheManager`**
 ```dart
-// Na inicialização do app ou da tela
+// On app or screen initialization
 void preLoadAds() {
   AdCacheManager.instance.preloadAd('rewarded_ad_unit', AdType.rewarded);
 }
 
-// Quando o usuário for executar a ação para ver o anúncio
+// When the user is about to perform the action to see the ad
 void showRewardedAd() {
   final ad = AdCacheManager.instance.getAd<RewardedAd>('rewarded_ad_unit');
   if (ad != null) {
     ad.show(onUserEarnedReward: (ad, reward) {
-      print('Recompensa ganha: ${reward.amount} ${reward.type}');
+      print('Reward earned: ${reward.amount} ${reward.type}');
     });
   } else {
-    // Opcional: Tentar carregar o anúncio agora ou mostrar mensagem
-    print('Anúncio recompensado não estava pronto.');
+    // Optional: Try to load the ad now or show a message
+    print('Rewarded ad was not ready.');
   }
 }
 ```
 
-**Cenário 3: Integração de UI com Ad Wrappers**
+**Scenario 3: UI Integration with Ad Wrappers**
 ```dart
-// Em um método build() de um widget
+// In a widget's build() method
 @override
 Widget build(BuildContext context) {
   return Column(
     children: [
-      Text('Conteúdo do App'),
+      Text('App Content'),
       BannerAdWidget(
         adUnitId: 'your_banner_ad_unit_id',
         size: AdSize.banner,
         loadingBuilder: (context) => CircularProgressIndicator(),
-        errorBuilder: (context, error) => Text('Erro: $error'),
+        errorBuilder: (context, error) => Text('Error: $error'),
       ),
       NativeAdWidget(
         adUnitId: 'your_native_ad_unit_id',
         nativeAdBuilder: (context, ad) => MyCustomNativeAdView(ad: ad),
-        loadingBuilder: (context) => Text('Carregando anúncio nativo...'),
+        loadingBuilder: (context) => Text('Loading native ad...'),
       ),
     ],
   );
