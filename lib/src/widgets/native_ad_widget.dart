@@ -1,64 +1,153 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
-import 'package:google_mobile_ads_async/src/widgets/ad_widget_wrapper.dart';
 
 /// A builder function that creates a widget to display a [NativeAd].
 typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
 
-/// A widget that loads and displays a [NativeAd].
+/// {@template nativeAdWidget}
+/// Displays a NativeAd with priority-based logic.
 ///
-/// This widget can either load an ad live or display a pre-loaded ad
-/// provided via the [NativeAdWidget.fromAd] constructor.
-class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
-  /// Creates a [NativeAdWidget] that loads an ad live.
-  ///
-  /// - [adUnitId]: The ad unit ID for the native ad.
-  /// - [nativeAdBuilder]: The builder function to create the ad's UI.
-  /// - [factoryId]: An optional factory ID.
-  /// - [request]: The ad request to use.
-  /// - [loadingBuilder]: A builder for the UI to show while the ad is loading.
-  /// - [errorBuilder]: A builder for the UI to show when an ad fails to load.
-  /// - [adLoader]: An optional [AsyncAdLoader] to use for loading the ad.
+/// - If [ad] is provided, it will be displayed with the highest priority, and
+///  [adUnitId] will be ignored.
+/// - If [ad] is null, a new ad will be loaded using [adUnitId].
+/// {@endtemplate}
+class NativeAdWidget extends StatefulWidget {
+  ////@{macro nativeAdWidget}
   const NativeAdWidget({
-    required String adUnitId,
     required this.nativeAdBuilder,
     super.key,
+    this.ad,
+    this.adUnitId,
+    this.adRequest = const AdRequest(),
     this.factoryId,
-    super.request,
-    super.loadingBuilder,
-    super.errorBuilder,
-    super.adLoader,
-  }) : super(adUnitId: adUnitId);
+    this.nativeAdOptions,
+  }) : assert(
+          ad != null || adUnitId != null,
+          'Either ad or adUnitId must be provided.',
+        );
 
-  /// Creates a [NativeAdWidget] from a pre-loaded [NativeAd].
-  NativeAdWidget.fromAd(
-    NativeAd ad, {
-    required this.nativeAdBuilder,
-    super.key,
-    this.factoryId,
-  }) : super.fromAd(ad: ad);
+  /// A pre-loaded ad to be displayed. It has priority over [adUnitId].
+  final NativeAd? ad;
 
-  /// A builder function to create the widget that displays the native ad.
-  ///
-  /// This gives you full control over the ad's layout.
+  /// The ad unit ID for loading an ad, used only if [ad] is null.
+  final String? adUnitId;
+
+  /// The builder function to create the ad's UI.
   final NativeAdBuilder nativeAdBuilder;
+
+  /// The ad request to use when loading with [adUnitId].
+  final AdRequest adRequest;
 
   /// Optional factory ID for native ad formats.
   final String? factoryId;
 
+  /// Optional options for the native ad.
+  final NativeAdOptions? nativeAdOptions;
+
   @override
-  Future<NativeAd> loadAd() {
-    final loader = adLoader ?? AsyncAdLoader();
-    return loader.loadNativeAd(
-      adUnitId: adUnitId!,
-      request: request,
-      factoryId: factoryId,
-    );
+  State<NativeAdWidget> createState() => _NativeAdWidgetState();
+}
+
+class _NativeAdWidgetState extends State<NativeAdWidget> {
+  NativeAd? _ad;
+  bool _isAdManagedInternally = false;
+
+  bool _isLoading = false;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveAd();
   }
 
   @override
-  Widget buildAd(BuildContext context, NativeAd ad) {
-    return nativeAdBuilder(context, ad);
+  void didUpdateWidget(NativeAdWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.ad != oldWidget.ad || widget.adUnitId != oldWidget.adUnitId) {
+      _disposeInternalAd();
+      _resolveAd();
+    }
+  }
+
+  void _resolveAd() {
+    if (widget.ad != null) {
+      setState(() {
+        _ad = widget.ad;
+        _isAdManagedInternally = false;
+        _isLoading = false;
+        _error = null;
+      });
+    } else if (widget.adUnitId != null) {
+      _isAdManagedInternally = true;
+      _loadAd();
+    }
+  }
+
+  Future<void> _loadAd() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final adLoader = AsyncAdLoader();
+      final ad = await adLoader.loadNativeAd(
+        adUnitId: widget.adUnitId!,
+        request: widget.adRequest,
+        factoryId: widget.factoryId,
+        nativeAdOptions: widget.nativeAdOptions,
+      );
+
+      if (mounted) {
+        setState(() {
+          _ad = ad;
+          _isLoading = false;
+        });
+      } else {
+        await ad.dispose();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e;
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _disposeInternalAd() {
+    if (_isAdManagedInternally) {
+      _ad?.dispose();
+    }
+    _ad = null;
+  }
+
+  @override
+  void dispose() {
+    _disposeInternalAd();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator.adaptive());
+    }
+
+    if (_error != null) {
+      return const Center(child: Icon(Icons.error_outline, color: Colors.red));
+    }
+
+    final adToDisplay = _ad;
+    if (adToDisplay != null) {
+      return widget.nativeAdBuilder(context, adToDisplay);
+    }
+
+    return const SizedBox.shrink();
   }
 }

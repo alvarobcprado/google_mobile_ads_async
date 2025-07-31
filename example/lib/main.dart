@@ -125,39 +125,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              // Use the cached ad if available, otherwise load it live.
-              if (cachedNative != null)
-                NativeAdCard.fromAd(ad: cachedNative, height: 250)
-              else
-                NativeAdCard(
-                  adUnitId: nativeAdUnitId,
-                  height: 250,
-                  loadingBuilder: (context) => const SizedBox(
-                    height: 250,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  errorBuilder: (context, error) => SizedBox(
-                    height: 250,
-                    child: Center(child: Text('Error: $error')),
-                  ),
-                ),
+              // The widget will display the cached ad if available,
+              // otherwise it will load a new one using the adUnitId.
+              NativeAdCard(
+                ad: cachedNative,
+                adUnitId: nativeAdUnitId,
+                height: 250,
+              ),
             ],
           ),
         ),
       ),
-      // Use the cached ad if available, otherwise load it live.
-      bottomNavigationBar: (cachedBanner != null)
-          ? BannerAdWidget.fromAd(cachedBanner)
-          : BannerAdWidget(
-              adUnitId: bannerAdUnitId,
-              size: AdSize.banner,
-              loadingBuilder: (context) => const SizedBox(height: 50),
-              errorBuilder: (context, error) => Container(
-                height: 50,
-                color: Colors.red,
-                child: Center(child: Text('Error: $error')),
-              ),
-            ),
+      // The widget will display the cached ad if available,
+      // otherwise it will load a new one using the adUnitId.
+      bottomNavigationBar: BannerAdWidget(
+        ad: cachedBanner,
+        adUnitId: bannerAdUnitId,
+        size: AdSize.banner,
+      ),
     );
   }
 

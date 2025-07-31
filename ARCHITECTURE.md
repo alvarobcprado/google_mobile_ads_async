@@ -76,13 +76,13 @@ A high-level layer for managing the ad lifecycle.
 
 To simplify the integration of ads directly into the Flutter widget tree, the package provides a UI layer.
 
-- **Responsibility:** Manage the loading state of an ad (Banner or Native) and render the corresponding UI. It supports two flows:
-    1.  **Live Loading:** Using the default constructor, the widget takes an `adUnitId` and loads the ad automatically.
-    2.  **Pre-loaded Ad:** Using the `.fromAd()` named constructor, the widget accepts an already-loaded ad object (e.g., from `AdCacheManager`) and displays it instantly.
+- **Responsibility:** Manage the loading and display state of a Banner or Native ad, rendering the corresponding UI. It supports a unified, priority-based flow.
+- **Logic:** The widget's constructor accepts both an optional pre-loaded `ad` object and an `adUnitId`.
+    1.  **Pre-loaded Ad Priority:** If an `ad` object is provided, it is displayed immediately, and the `adUnitId` is ignored. The widget assumes this ad is managed externally and will not dispose of it.
+    2.  **Live Loading Fallback:** If `ad` is `null`, the widget uses the `adUnitId` to load the ad automatically. It will manage the entire lifecycle of this ad, including calling `dispose()` when the widget is removed.
 - **Main Components:**
-    - **`AdWidgetWrapper` (Abstract):** A base `StatefulWidget` that contains the common logic for both loading flows.
-    - **`BannerAdWidget`:** A wrapper for banner ads with `.fromAd()` for pre-loaded ads.
-    - **`NativeAdWidget`:** A wrapper for native ads with `.fromAd()` for pre-loaded ads.
+    - **`BannerAdWidget`:** A wrapper for banner ads.
+    - **`NativeAdWidget`:** A wrapper for native ads.
 
 
 ### Flow Diagram (Preloading)
@@ -125,8 +125,7 @@ The implementation will be divided into the following steps:
   - Ensure correct ad disposal (`dispose`) to prevent memory leaks.
 
 - [X] **Step 5: Develop Display Widgets (Wrappers)**
-  - Create the abstract base class `AdWidgetWrapper` to manage the ad lifecycle state.
-  - Implement `BannerAdWidget` to display banner ads with `loading`/`error` builders.
+  - Implement `BannerAdWidget` to display banner ads.
   - Implement `NativeAdWidget` with a `nativeAdBuilder` for custom rendering.
   - Refactor the existing `NativeAdCard` to use `NativeAdWidget` internally.
 
@@ -186,15 +185,22 @@ void showRewardedAd() {
 // In a widget's build() method
 @override
 Widget build(BuildContext context) {
+  // Ad is fetched from a cache or pre-loaded earlier
+  final BannerAd? myPreloadedAd = AdCacheManager.instance.getAd('banner_id');
+
   return Column(
     children: [
       Text('App Content'),
+
+      // Example 1: Using a pre-loaded ad for instant display.
+      // The widget will show the ad if `myPreloadedAd` is not null.
+      // Otherwise, it will use `adUnitId` to load a new one.
       BannerAdWidget(
+        ad: myPreloadedAd,
         adUnitId: 'your_banner_ad_unit_id',
-        size: AdSize.banner,
-        loadingBuilder: (context) => CircularProgressIndicator(),
-        errorBuilder: (context, error) => Text('Error: $error'),
       ),
+
+      // Example 2: Live-loading a native ad.
       NativeAdWidget(
         adUnitId: 'your_native_ad_unit_id',
         nativeAdBuilder: (context, ad) => MyCustomNativeAdView(ad: ad),
