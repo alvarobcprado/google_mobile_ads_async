@@ -1,11 +1,9 @@
-library google_mobile_ads_async;
-
 import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:google_mobile_ads_async/src/ad_loader.dart';
 
-import 'src/ad_loader.dart';
-import 'src/ad_load_exception.dart';
+export 'package:google_mobile_ads/google_mobile_ads.dart';
 
 export 'src/ad_cache_manager.dart';
 export 'src/ad_load_exception.dart';

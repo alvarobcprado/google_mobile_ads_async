@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 
 // Ad Unit IDs for testing. Replace with your own in production.
@@ -63,7 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (ad != null) {
       ad.show();
       // Preload the next one.
-      AdCacheManager.instance.preloadAd(interstitialAdUnitId, AdType.interstitial);
+      AdCacheManager.instance
+          .preloadAd(interstitialAdUnitId, AdType.interstitial);
     } else {
       _showSnackBar('Interstitial ad is not ready yet.');
     }
@@ -91,8 +91,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     // Try to get the cached ads.
-    final cachedBanner = AdCacheManager.instance.getAd<BannerAd>(bannerAdUnitId);
-    final cachedNative = AdCacheManager.instance.getAd<NativeAd>(nativeAdUnitId);
+    final cachedBanner =
+        AdCacheManager.instance.getAd<BannerAd>(bannerAdUnitId);
+    final cachedNative =
+        AdCacheManager.instance.getAd<NativeAd>(nativeAdUnitId);
 
     return Scaffold(
       appBar: AppBar(

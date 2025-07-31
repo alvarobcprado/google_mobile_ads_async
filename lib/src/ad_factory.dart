@@ -1,8 +1,11 @@
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-/// A factory class that creates and loads ads. This class exists to wrap the
-/// static methods of the google_mobile_ads plugin, making them mockable for tests.
+/// A factory class that creates and loads ads.
+///
+/// This class exists to wrap the static methods of the google_mobile_ads
+/// plugin, making them mockable for tests.
 class AdFactory {
+  /// Loads a [BannerAd].
   void loadBannerAd(
     String adUnitId,
     AdSize size,
@@ -17,6 +20,7 @@ class AdFactory {
     ).load();
   }
 
+  /// Loads an [InterstitialAd].
   void loadInterstitialAd(
     String adUnitId,
     AdRequest request,
@@ -29,6 +33,7 @@ class AdFactory {
     );
   }
 
+  /// Loads a [RewardedAd].
   void loadRewardedAd(
     String adUnitId,
     AdRequest request,
@@ -41,6 +46,7 @@ class AdFactory {
     );
   }
 
+  /// Loads a [RewardedInterstitialAd].
   void loadRewardedInterstitialAd(
     String adUnitId,
     AdRequest request,
@@ -53,6 +59,7 @@ class AdFactory {
     );
   }
 
+  /// Loads a [NativeAd].
   void loadNativeAd(
     String adUnitId,
     AdRequest request,
@@ -69,6 +76,7 @@ class AdFactory {
     ).load();
   }
 
+  /// Loads an [AppOpenAd].
   void loadAppOpenAd(
     String adUnitId,
     AdRequest request,

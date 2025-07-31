@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
-import 'native_ad_widget.dart';
+import 'package:google_mobile_ads_async/src/widgets/native_ad_widget.dart';
 
 /// A pre-styled widget that displays a [NativeAd] in a card-like layout.
 ///
 /// This widget is a convenient implementation of [NativeAdWidget] that provides
 /// a default layout. It can either load an ad live or display a pre-loaded ad.
 class NativeAdCard extends StatelessWidget {
+  /// Creates a [NativeAdCard] that loads an ad live.
+  const NativeAdCard({
+    required this.adUnitId,
+    super.key,
+    this.request,
+    this.factoryId,
+    this.loadingBuilder,
+    this.errorBuilder,
+    this.height = 320.0,
+  }) : ad = null;
+
+  /// Creates a [NativeAdCard] from a pre-loaded [NativeAd].
+  const NativeAdCard.fromAd({
+    required this.ad,
+    super.key,
+    this.factoryId,
+    this.height = 320.0,
+  })  : adUnitId = null,
+        request = null,
+        loadingBuilder = null,
+        errorBuilder = null;
+
   /// The ad unit ID for the native ad (for live loading).
   final String? adUnitId;
 
@@ -28,28 +49,6 @@ class NativeAdCard extends StatelessWidget {
 
   /// The height of the card. Defaults to 320.
   final double height;
-
-  /// Creates a [NativeAdCard] that loads an ad live.
-  const NativeAdCard({
-    super.key,
-    required this.adUnitId,
-    this.request,
-    this.factoryId,
-    this.loadingBuilder,
-    this.errorBuilder,
-    this.height = 320.0,
-  }) : ad = null;
-
-  /// Creates a [NativeAdCard] from a pre-loaded [NativeAd].
-  const NativeAdCard.fromAd({
-    super.key,
-    required this.ad,
-    this.factoryId,
-    this.height = 320.0,
-  })  : adUnitId = null,
-        request = null,
-        loadingBuilder = null,
-        errorBuilder = null;
 
   @override
   Widget build(BuildContext context) {

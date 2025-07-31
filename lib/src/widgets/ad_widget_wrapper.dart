@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
-import '../ad_loader.dart';
+import 'package:google_mobile_ads_async/src/ad_loader.dart';
 
 /// Enum representing the state of an ad being loaded by a wrapper widget.
 enum _AdState {
@@ -21,9 +20,29 @@ enum _AdState {
 /// disposal. It supports two flows:
 /// 1.  **Live Loading:** When created with the default constructor, it loads an
 ///     ad based on an `adUnitId`.
-/// 2.  **Pre-loaded Ad:** When created with a `.fromAd` constructor, it displays
-///     an ad object that has already been loaded.
+/// 2.  **Pre-loaded Ad:** When created with a `.fromAd` constructor, it display
+///  an ad object that has already been loaded.
 abstract class AdWidgetWrapper<T extends Ad> extends StatefulWidget {
+  /// Creates a wrapper that loads an ad live.
+  const AdWidgetWrapper({
+    required this.adUnitId,
+    super.key,
+    this.request,
+    this.loadingBuilder,
+    this.errorBuilder,
+    this.adLoader,
+  }) : ad = null;
+
+  /// Creates a wrapper that displays a pre-loaded ad.
+  AdWidgetWrapper.fromAd({
+    required this.ad,
+    super.key,
+    this.loadingBuilder,
+    this.errorBuilder,
+  })  : adUnitId = ad?.adUnitId,
+        request = null,
+        adLoader = null;
+
   /// The ad unit ID for the ad. Required for live loading.
   final String? adUnitId;
 
@@ -42,27 +61,8 @@ abstract class AdWidgetWrapper<T extends Ad> extends StatefulWidget {
   /// The ad loader used for live loading.
   final AsyncAdLoader? adLoader;
 
-  /// Creates a wrapper that loads an ad live.
-  const AdWidgetWrapper({
-    super.key,
-    required this.adUnitId,
-    this.request,
-    this.loadingBuilder,
-    this.errorBuilder,
-    this.adLoader,
-  }) : ad = null;
-
-  /// Creates a wrapper that displays a pre-loaded ad.
-  AdWidgetWrapper.fromAd({
-    super.key,
-    required this.ad,
-    this.loadingBuilder,
-    this.errorBuilder,
-  })  : adUnitId = ad?.adUnitId,
-        request = null,
-        adLoader = null;
-
-  /// Abstract method that subclasses must implement to load the specific ad type.
+  /// Abstract method that subclasses must implement to load the specific ad
+  /// type.
   Future<T> loadAd();
 
   /// Abstract method that subclasses must implement to build the widget
@@ -76,7 +76,7 @@ abstract class AdWidgetWrapper<T extends Ad> extends StatefulWidget {
 class _AdWidgetWrapperState<T extends Ad> extends State<AdWidgetWrapper<T>> {
   _AdState _adState = _AdState.loading;
   T? _ad;
-  Object? _error;
+  late Object? _error;
 
   @override
   void initState() {

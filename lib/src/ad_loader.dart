@@ -2,19 +2,17 @@ import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import 'ad_factory.dart';
-import 'ad_load_exception.dart';
+import 'package:google_mobile_ads_async/src/ad_factory.dart';
+import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
 
 /// A utility class to load various ad formats using a Future-based API.
 class AsyncAdLoader {
-  final AdFactory _adFactory;
-
-  // The default constructor uses the real AdFactory.
+  /// The default constructor uses the real AdFactory.
   AsyncAdLoader() : _adFactory = AdFactory();
 
-  // A constructor for testing that allows injecting a mock AdFactory.
+  /// A constructor for testing that allows injecting a mock AdFactory.
   AsyncAdLoader.withFactory(this._adFactory);
-
+  final AdFactory _adFactory;
 
   /// Loads a [BannerAd].
   Future<BannerAd> loadBannerAd({
@@ -48,8 +46,9 @@ class AsyncAdLoader {
       adUnitId,
       request ?? const AdRequest(),
       InterstitialAdLoadCallback(
-        onAdLoaded: (ad) => completer.complete(ad),
-        onAdFailedToLoad: (error) => completer.completeError(AdLoadException(error)),
+        onAdLoaded: completer.complete,
+        onAdFailedToLoad: (error) =>
+            completer.completeError(AdLoadException(error)),
       ),
     );
     return completer.future;
@@ -65,8 +64,9 @@ class AsyncAdLoader {
       adUnitId,
       request ?? const AdRequest(),
       RewardedAdLoadCallback(
-        onAdLoaded: (ad) => completer.complete(ad),
-        onAdFailedToLoad: (error) => completer.completeError(AdLoadException(error)),
+        onAdLoaded: completer.complete,
+        onAdFailedToLoad: (error) =>
+            completer.completeError(AdLoadException(error)),
       ),
     );
     return completer.future;
@@ -82,8 +82,9 @@ class AsyncAdLoader {
       adUnitId,
       request ?? const AdRequest(),
       RewardedInterstitialAdLoadCallback(
-        onAdLoaded: (ad) => completer.complete(ad),
-        onAdFailedToLoad: (error) => completer.completeError(AdLoadException(error)),
+        onAdLoaded: completer.complete,
+        onAdFailedToLoad: (error) =>
+            completer.completeError(AdLoadException(error)),
       ),
     );
     return completer.future;
@@ -123,8 +124,9 @@ class AsyncAdLoader {
       adUnitId,
       request ?? const AdRequest(),
       AppOpenAdLoadCallback(
-        onAdLoaded: (ad) => completer.complete(ad),
-        onAdFailedToLoad: (error) => completer.completeError(AdLoadException(error)),
+        onAdLoaded: completer.complete,
+        onAdFailedToLoad: (error) =>
+            completer.completeError(AdLoadException(error)),
       ),
     );
     return completer.future;

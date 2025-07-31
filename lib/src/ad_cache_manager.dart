@@ -1,15 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
-import 'ad_loader.dart';
+import 'package:google_mobile_ads_async/google_mobile_ads_async.dart'
+    show AdLoadException;
+import 'package:google_mobile_ads_async/src/ad_loader.dart';
 
 /// An enumeration of the different ad types supported by the cache manager.
 enum AdType {
+  /// Banner ad type
   banner,
+
+  /// Interstitial ad type
   interstitial,
+
+  /// Rewarded ad type
   rewarded,
+
+  /// Rewarded interstitial ad type
   rewardedInterstitial,
+
+  /// Native ad type
   native,
+
+  /// App open ad type
   appOpen,
 }
 
@@ -17,15 +29,15 @@ enum AdType {
 class AdCacheManager {
   AdCacheManager._() : _loader = AsyncAdLoader();
 
+  /// A constructor for testing that allows injecting a mock AsyncAdLoader.
+  @visibleForTesting
+  AdCacheManager.withLoader(this._loader);
+
   /// The singleton instance of [AdCacheManager].
   static final instance = AdCacheManager._();
 
   final AsyncAdLoader _loader;
   final _cache = <String, Ad>{};
-
-  // A constructor for testing that allows injecting a mock AsyncAdLoader.
-  @visibleForTesting
-  AdCacheManager.withLoader(this._loader);
 
   /// Preloads an ad and stores it in the cache.
   ///
@@ -45,34 +57,45 @@ class AdCacheManager {
     }
 
     try {
-      Ad? ad;
+      final Ad ad;
       switch (type) {
         case AdType.banner:
           assert(size != null, 'AdSize must be provided for banner ads.');
-          ad = await _loader.loadBannerAd(adUnitId: adUnitId, size: size!, request: request);
-          break;
+          ad = await _loader.loadBannerAd(
+            adUnitId: adUnitId,
+            size: size!,
+            request: request,
+          );
         case AdType.interstitial:
-          ad = await _loader.loadInterstitialAd(adUnitId: adUnitId, request: request);
-          break;
+          ad = await _loader.loadInterstitialAd(
+            adUnitId: adUnitId,
+            request: request,
+          );
         case AdType.rewarded:
-          ad = await _loader.loadRewardedAd(adUnitId: adUnitId, request: request);
-          break;
+          ad = await _loader.loadRewardedAd(
+            adUnitId: adUnitId,
+            request: request,
+          );
         case AdType.rewardedInterstitial:
-          ad = await _loader.loadRewardedInterstitialAd(adUnitId: adUnitId, request: request);
-          break;
+          ad = await _loader.loadRewardedInterstitialAd(
+            adUnitId: adUnitId,
+            request: request,
+          );
         case AdType.native:
-          ad = await _loader.loadNativeAd(adUnitId: adUnitId, request: request);
-          break;
+          ad = await _loader.loadNativeAd(
+            adUnitId: adUnitId,
+            request: request,
+          );
         case AdType.appOpen:
-          ad = await _loader.loadAppOpenAd(adUnitId: adUnitId, request: request);
-          break;
+          ad = await _loader.loadAppOpenAd(
+            adUnitId: adUnitId,
+            request: request,
+          );
       }
-      if (ad != null) {
-        _cache[adUnitId] = ad;
-      }
-    } catch (e) {
+      _cache[adUnitId] = ad;
+    } on AdLoadException catch (e) {
       // Failed to load, ad will not be cached.
-      print('Failed to preload ad for $adUnitId: $e');
+      debugPrint('Failed to preload ad for $adUnitId: $e');
     }
   }
 

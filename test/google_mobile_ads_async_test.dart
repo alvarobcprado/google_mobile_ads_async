@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
 import 'package:mocktail/mocktail.dart';
@@ -65,7 +64,7 @@ void main() {
           )).thenThrow(AdLoadException(mockError));
 
       // No need to `await` here since we are just checking the side effect.
-      cacheManager.preloadAd(
+      await cacheManager.preloadAd(
         'test-banner-fail',
         AdType.banner,
         size: AdSize.banner,
@@ -95,7 +94,7 @@ void main() {
 
     test('disposeAd removes and disposes the ad', () async {
       final mockAd = MockBannerAd();
-      when(() => mockAd.dispose()).thenAnswer((_) async {});
+      when(mockAd.dispose).thenAnswer((_) async {});
       when(() => mockAdLoader.loadBannerAd(
             adUnitId: 'test-banner',
             size: AdSize.banner,
@@ -109,7 +108,7 @@ void main() {
       );
 
       cacheManager.disposeAd('test-banner');
-      verify(() => mockAd.dispose()).called(1);
+      verify(mockAd.dispose).called(1);
       final cachedAd = cacheManager.getAd<BannerAd>('test-banner');
       expect(cachedAd, isNull);
     });

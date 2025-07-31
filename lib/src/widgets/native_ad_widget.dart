@@ -1,8 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
-import '../ad_loader.dart';
-import 'ad_widget_wrapper.dart';
+import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/src/widgets/ad_widget_wrapper.dart';
 
 /// A builder function that creates a widget to display a [NativeAd].
 typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
@@ -12,14 +11,6 @@ typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
 /// This widget can either load an ad live or display a pre-loaded ad
 /// provided via the [NativeAdWidget.fromAd] constructor.
 class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
-  /// A builder function to create the widget that displays the native ad.
-  ///
-  /// This gives you full control over the ad's layout.
-  final NativeAdBuilder nativeAdBuilder;
-
-  /// Optional factory ID for native ad formats.
-  final String? factoryId;
-
   /// Creates a [NativeAdWidget] that loads an ad live.
   ///
   /// - [adUnitId]: The ad unit ID for the native ad.
@@ -30,9 +21,9 @@ class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
   /// - [errorBuilder]: A builder for the UI to show when an ad fails to load.
   /// - [adLoader]: An optional [AsyncAdLoader] to use for loading the ad.
   const NativeAdWidget({
-    super.key,
     required String adUnitId,
     required this.nativeAdBuilder,
+    super.key,
     this.factoryId,
     super.request,
     super.loadingBuilder,
@@ -43,10 +34,18 @@ class NativeAdWidget extends AdWidgetWrapper<NativeAd> {
   /// Creates a [NativeAdWidget] from a pre-loaded [NativeAd].
   NativeAdWidget.fromAd(
     NativeAd ad, {
-    super.key,
     required this.nativeAdBuilder,
+    super.key,
     this.factoryId,
   }) : super.fromAd(ad: ad);
+
+  /// A builder function to create the widget that displays the native ad.
+  ///
+  /// This gives you full control over the ad's layout.
+  final NativeAdBuilder nativeAdBuilder;
+
+  /// Optional factory ID for native ad formats.
+  final String? factoryId;
 
   @override
   Future<NativeAd> loadAd() {
