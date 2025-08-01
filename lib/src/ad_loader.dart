@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
 import 'package:google_mobile_ads_async/src/ad_factory.dart';
 import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
 
@@ -96,6 +95,7 @@ class AsyncAdLoader {
     AdRequest? request,
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
+    NativeTemplateStyle? nativeTemplateStyle,
   }) {
     final completer = Completer<NativeAd>();
     _adFactory.loadNativeAd(
@@ -110,6 +110,7 @@ class AsyncAdLoader {
           completer.completeError(AdLoadException(error));
         },
       ),
+      nativeTemplateStyle,
     );
     return completer.future;
   }

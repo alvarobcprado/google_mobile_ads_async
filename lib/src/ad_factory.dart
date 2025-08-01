@@ -66,6 +66,7 @@ class AdFactory {
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
     NativeAdListener listener,
+    NativeTemplateStyle? nativeTemplateStyle,
   ) {
     NativeAd(
       adUnitId: adUnitId,
@@ -73,6 +74,10 @@ class AdFactory {
       nativeAdOptions: nativeAdOptions,
       factoryId: factoryId,
       listener: listener,
+      nativeTemplateStyle: nativeTemplateStyle ??
+          NativeTemplateStyle(
+            templateType: TemplateType.medium,
+          ),
     ).load();
   }
 

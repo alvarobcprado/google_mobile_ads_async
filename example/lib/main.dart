@@ -7,22 +7,23 @@ const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
 const String rewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
 const String nativeAdUnitId = 'ca-app-pub-3940256099942544/2247696110';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize the Google Mobile Ads SDK.
-  MobileAds.instance.initialize();
+  await MobileAds.instance.initialize();
   // Preload ads using the cache manager.
-  _preloadAds();
+  _preloadAds().ignore();
   runApp(const MyApp());
 }
 
-void _preloadAds() {
+Future<void> _preloadAds() async {
   final cacheManager = AdCacheManager.instance;
-  cacheManager.preloadAd(interstitialAdUnitId, AdType.interstitial);
-  cacheManager.preloadAd(rewardedAdUnitId, AdType.rewarded);
-  // Preload ads for the widgets too
-  cacheManager.preloadAd(bannerAdUnitId, AdType.banner, size: AdSize.banner);
-  cacheManager.preloadAd(nativeAdUnitId, AdType.native);
+  Future.wait([
+    cacheManager.preloadAd(interstitialAdUnitId, AdType.interstitial),
+    cacheManager.preloadAd(rewardedAdUnitId, AdType.rewarded),
+    // Preload ads for the widgets too
+    cacheManager.preloadAd(bannerAdUnitId, AdType.banner, size: AdSize.banner),
+  ]);
 }
 
 class MyApp extends StatelessWidget {
@@ -93,9 +94,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // Try to get the cached ads.
     final cachedBanner =
         AdCacheManager.instance.getAd<BannerAd>(bannerAdUnitId);
-    final cachedNative =
-        AdCacheManager.instance.getAd<NativeAd>(nativeAdUnitId);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ad Demo'),
@@ -125,12 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              // The widget will display the cached ad if available,
-              // otherwise it will load a new one using the adUnitId.
-              NativeAdCard(
-                ad: cachedNative,
-                adUnitId: nativeAdUnitId,
-                height: 250,
+              const BannerAdWidget(
+                adUnitId: bannerAdUnitId,
+                size: AdSize.mediumRectangle,
               ),
             ],
           ),
