@@ -3,6 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart'
     show AdLoadException;
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/src/utils/logger.dart';
 
 /// An enumeration of the different ad types supported by the cache manager.
 enum AdType {
@@ -52,9 +53,13 @@ class AdCacheManager {
     AdRequest? request,
   }) async {
     if (_cache.containsKey(adUnitId)) {
-      // Ad already loaded or is loading.
+      AdLogger.debug(
+        'Ad for AdUnitId: $adUnitId already loaded or is loading.',
+      );
       return;
     }
+
+    AdLogger.debug('Preloading ad for AdUnitId: $adUnitId');
 
     try {
       final Ad ad;
@@ -93,9 +98,9 @@ class AdCacheManager {
           );
       }
       _cache[adUnitId] = ad;
+      AdLogger.info('Successfully preloaded ad for AdUnitId: $adUnitId');
     } on AdLoadException catch (e) {
-      // Failed to load, ad will not be cached.
-      debugPrint('Failed to preload ad for $adUnitId: $e');
+      AdLogger.error('Failed to preload ad for $adUnitId', error: e);
     }
   }
 
@@ -105,6 +110,9 @@ class AdCacheManager {
   /// The ad is removed from the cache upon retrieval.
   T? getAd<T extends Ad>(String adUnitId) {
     final ad = _cache.remove(adUnitId);
+    AdLogger.debug(
+      'Retrieving ad from cache for AdUnitId: $adUnitId. Found: ${ad != null}',
+    );
     if (ad is T) {
       return ad;
     }
@@ -113,11 +121,13 @@ class AdCacheManager {
 
   /// Disposes of a specific ad in the cache.
   void disposeAd(String adUnitId) {
+    AdLogger.debug('Disposing ad from cache for AdUnitId: $adUnitId');
     _cache.remove(adUnitId)?.dispose();
   }
 
   /// Disposes of all ads in the cache.
   void disposeAllAds() {
+    AdLogger.info('Disposing all cached ads.');
     for (final ad in _cache.values) {
       ad.dispose();
     }

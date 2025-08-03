@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   google_mobile_ads: ^6.0.0
+  logger: ^2.3.0
 
 dev_dependencies:
   flutter_test:

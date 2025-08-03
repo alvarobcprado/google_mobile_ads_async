@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_factory.dart';
 import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
+import 'package:google_mobile_ads_async/src/utils/logger.dart';
 
 /// A utility class to load various ad formats using a Future-based API.
 class AsyncAdLoader {
@@ -19,15 +20,23 @@ class AsyncAdLoader {
     required AdSize size,
     AdRequest? request,
   }) {
+    AdLogger.debug('Attempting to load BannerAd with AdUnitId: $adUnitId');
     final completer = Completer<BannerAd>();
     _adFactory.loadBannerAd(
       adUnitId,
       size,
       request ?? const AdRequest(),
       BannerAdListener(
-        onAdLoaded: (ad) => completer.complete(ad as BannerAd),
+        onAdLoaded: (ad) {
+          AdLogger.info('BannerAd loaded successfully. AdUnitId: $adUnitId');
+          completer.complete(ad as BannerAd);
+        },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
+          AdLogger.error(
+            'Failed to load BannerAd. AdUnitId: $adUnitId',
+            error: error,
+          );
           completer.completeError(AdLoadException(error));
         },
       ),
@@ -40,14 +49,27 @@ class AsyncAdLoader {
     required String adUnitId,
     AdRequest? request,
   }) {
+    AdLogger.debug(
+      'Attempting to load InterstitialAd with AdUnitId: $adUnitId',
+    );
     final completer = Completer<InterstitialAd>();
     _adFactory.loadInterstitialAd(
       adUnitId,
       request ?? const AdRequest(),
       InterstitialAdLoadCallback(
-        onAdLoaded: completer.complete,
-        onAdFailedToLoad: (error) =>
-            completer.completeError(AdLoadException(error)),
+        onAdLoaded: (ad) {
+          AdLogger.info(
+            'InterstitialAd loaded successfully. AdUnitId: $adUnitId',
+          );
+          completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          AdLogger.error(
+            'Failed to load InterstitialAd. AdUnitId: $adUnitId',
+            error: error,
+          );
+          completer.completeError(AdLoadException(error));
+        },
       ),
     );
     return completer.future;
@@ -58,14 +80,23 @@ class AsyncAdLoader {
     required String adUnitId,
     AdRequest? request,
   }) {
+    AdLogger.debug('Attempting to load RewardedAd with AdUnitId: $adUnitId');
     final completer = Completer<RewardedAd>();
     _adFactory.loadRewardedAd(
       adUnitId,
       request ?? const AdRequest(),
       RewardedAdLoadCallback(
-        onAdLoaded: completer.complete,
-        onAdFailedToLoad: (error) =>
-            completer.completeError(AdLoadException(error)),
+        onAdLoaded: (ad) {
+          AdLogger.info('RewardedAd loaded successfully. AdUnitId: $adUnitId');
+          completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          AdLogger.error(
+            'Failed to load RewardedAd. AdUnitId: $adUnitId',
+            error: error,
+          );
+          completer.completeError(AdLoadException(error));
+        },
       ),
     );
     return completer.future;
@@ -76,14 +107,27 @@ class AsyncAdLoader {
     required String adUnitId,
     AdRequest? request,
   }) {
+    AdLogger.debug(
+      'Attempting to load RewardedInterstitialAd with AdUnitId: $adUnitId',
+    );
     final completer = Completer<RewardedInterstitialAd>();
     _adFactory.loadRewardedInterstitialAd(
       adUnitId,
       request ?? const AdRequest(),
       RewardedInterstitialAdLoadCallback(
-        onAdLoaded: completer.complete,
-        onAdFailedToLoad: (error) =>
-            completer.completeError(AdLoadException(error)),
+        onAdLoaded: (ad) {
+          AdLogger.info(
+            'RewardedInterstitialAd loaded successfully. AdUnitId: $adUnitId',
+          );
+          completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          AdLogger.error(
+            'Failed to load RewardedInterstitialAd. AdUnitId: $adUnitId',
+            error: error,
+          );
+          completer.completeError(AdLoadException(error));
+        },
       ),
     );
     return completer.future;
@@ -97,6 +141,7 @@ class AsyncAdLoader {
     String? factoryId,
     NativeTemplateStyle? nativeTemplateStyle,
   }) {
+    AdLogger.debug('Attempting to load NativeAd with AdUnitId: $adUnitId');
     final completer = Completer<NativeAd>();
     _adFactory.loadNativeAd(
       adUnitId,
@@ -104,9 +149,16 @@ class AsyncAdLoader {
       nativeAdOptions,
       factoryId,
       NativeAdListener(
-        onAdLoaded: (ad) => completer.complete(ad as NativeAd),
+        onAdLoaded: (ad) {
+          AdLogger.info('NativeAd loaded successfully. AdUnitId: $adUnitId');
+          completer.complete(ad as NativeAd);
+        },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
+          AdLogger.error(
+            'Failed to load NativeAd. AdUnitId: $adUnitId',
+            error: error,
+          );
           completer.completeError(AdLoadException(error));
         },
       ),
@@ -120,14 +172,23 @@ class AsyncAdLoader {
     required String adUnitId,
     AdRequest? request,
   }) {
+    AdLogger.debug('Attempting to load AppOpenAd with AdUnitId: $adUnitId');
     final completer = Completer<AppOpenAd>();
     _adFactory.loadAppOpenAd(
       adUnitId,
       request ?? const AdRequest(),
       AppOpenAdLoadCallback(
-        onAdLoaded: completer.complete,
-        onAdFailedToLoad: (error) =>
-            completer.completeError(AdLoadException(error)),
+        onAdLoaded: (ad) {
+          AdLogger.info('AppOpenAd loaded successfully. AdUnitId: $adUnitId');
+          completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          AdLogger.error(
+            'Failed to load AppOpenAd. AdUnitId: $adUnitId',
+            error: error,
+          );
+          completer.completeError(AdLoadException(error));
+        },
       ),
     );
     return completer.future;

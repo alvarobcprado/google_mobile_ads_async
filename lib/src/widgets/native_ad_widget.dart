@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/src/utils/logger.dart';
 import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
 /// A builder function that creates a widget to display a [NativeAd].
@@ -71,12 +72,19 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   @override
   void initState() {
     super.initState();
+    AdLogger.verbose(
+      'initState: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+    );
     _resolveAd();
   }
 
   @override
   void didUpdateWidget(NativeAdWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    AdLogger.verbose(
+      'didUpdateWidget: ${widget.runtimeType} with AdUnitId: '
+      '${widget.adUnitId}',
+    );
     if (widget.ad != oldWidget.ad || widget.adUnitId != oldWidget.adUnitId) {
       _disposeInternalAd();
       _resolveAd();
@@ -85,6 +93,9 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
   void _resolveAd() {
     if (widget.ad != null) {
+      AdLogger.debug(
+        'Using externally provided ad for ${widget.runtimeType}.',
+      );
       setState(() {
         _ad = widget.ad;
         _isAdManagedInternally = false;
@@ -92,6 +103,10 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
         _error = null;
       });
     } else if (widget.adUnitId != null) {
+      AdLogger.debug(
+        'No external ad provided, loading internally for '
+        '${widget.runtimeType}.',
+      );
       _isAdManagedInternally = true;
       _loadAd();
     }
@@ -99,6 +114,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
   Future<void> _loadAd() async {
     if (!mounted) return;
+    AdLogger.debug('Internal ad load started for ${widget.runtimeType}');
 
     setState(() {
       _isLoading = true;
@@ -115,14 +131,22 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
       );
 
       if (mounted) {
+        AdLogger.info('Internal ad load succeeded for ${widget.runtimeType}');
         setState(() {
           _ad = ad;
           _isLoading = false;
         });
       } else {
+        AdLogger.warning(
+          'Widget was disposed while ad was loading. Disposing ad.',
+        );
         await ad.dispose();
       }
     } catch (e) {
+      AdLogger.error(
+        'Internal ad load failed for ${widget.runtimeType}',
+        error: e,
+      );
       if (mounted) {
         setState(() {
           _error = e;
@@ -134,6 +158,9 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
   void _disposeInternalAd() {
     if (_isAdManagedInternally) {
+      AdLogger.debug(
+        'Disposing internally managed ad for ${widget.runtimeType}.',
+      );
       _ad?.dispose();
     }
     _ad = null;
@@ -141,6 +168,9 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
   @override
   void dispose() {
+    AdLogger.verbose(
+      'dispose: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+    );
     _disposeInternalAd();
     super.dispose();
   }

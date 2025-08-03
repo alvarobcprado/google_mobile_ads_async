@@ -9,6 +9,12 @@ const String nativeAdUnitId = 'ca-app-pub-3940256099942544/2247696110';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // --- Example Log Configuration ---
+  // Set the log level to see detailed messages during debugging.
+  // Use Level.verbose for the most detail.
+  GoogleMobileAdsAsync.setLogLevel(Level.debug);
+
   // Initialize the Google Mobile Ads SDK.
   await MobileAds.instance.initialize();
   // Preload ads using the cache manager.
@@ -121,22 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
               const Text(
                 'Widget-Based Ads',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              const Text('Native Ad', style: TextStyle(fontSize: 18)),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 320,
-                child: NativeAdWidget(
-                  adUnitId: nativeAdUnitId,
-                  nativeAdBuilder: (context, ad) => AdWidget(ad: ad),
-                  loadingBuilder: (context) => const Center(
-                    child: CircularProgressIndicator.adaptive(),
-                  ),
-                  errorBuilder: (context, error) => Center(
-                    child: Text('Error loading ad: $error'),
-                  ),
-                ),
               ),
               const SizedBox(height: 20),
               const Text('Banner Ad (defaults to empty space)',

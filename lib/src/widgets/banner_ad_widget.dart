@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/src/utils/logger.dart';
 import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
 /// {@template banner_ad_widget}
@@ -62,12 +63,19 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   @override
   void initState() {
     super.initState();
+    AdLogger.verbose(
+      'initState: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+    );
     _resolveAd();
   }
 
   @override
   void didUpdateWidget(BannerAdWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    AdLogger.verbose(
+      'didUpdateWidget: ${widget.runtimeType} with AdUnitId: '
+      '${widget.adUnitId}',
+    );
     // If the source of the ad changes, we need to re-evaluate.
     if (widget.ad != oldWidget.ad || widget.adUnitId != oldWidget.adUnitId) {
       _disposeInternalAd();
@@ -79,6 +87,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void _resolveAd() {
     // Priority 1: Use the externally provided ad.
     if (widget.ad != null) {
+      AdLogger.debug('Using externally provided ad for ${widget.runtimeType}.');
       setState(() {
         _ad = widget.ad;
         _isAdManagedInternally = false;
@@ -88,6 +97,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
     // Priority 2: Load an ad internally using adUnitId.
     else if (widget.adUnitId != null) {
+      AdLogger.debug(
+        'No external ad provided, loading internally for '
+        '${widget.runtimeType}.',
+      );
       _isAdManagedInternally = true;
       _loadAd();
     }
@@ -96,6 +109,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   /// Loads the ad using the adUnitId.
   Future<void> _loadAd() async {
     if (!mounted) return;
+    AdLogger.debug('Internal ad load started for ${widget.runtimeType}');
 
     setState(() {
       _isLoading = true;
@@ -111,15 +125,23 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       );
 
       if (mounted) {
+        AdLogger.info('Internal ad load succeeded for ${widget.runtimeType}');
         setState(() {
           _ad = ad;
           _isLoading = false;
         });
       } else {
+        AdLogger.warning(
+          'Widget was disposed while ad was loading. Disposing ad.',
+        );
         // If the widget was disposed while the ad was loading, dispose the ad.
         await ad.dispose();
       }
     } catch (e) {
+      AdLogger.error(
+        'Internal ad load failed for ${widget.runtimeType}',
+        error: e,
+      );
       if (mounted) {
         setState(() {
           _error = e;
@@ -132,6 +154,9 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   /// Disposes of the internal ad only if it was created by this widget.
   void _disposeInternalAd() {
     if (_isAdManagedInternally) {
+      AdLogger.debug(
+        'Disposing internally managed ad for ${widget.runtimeType}.',
+      );
       _ad?.dispose();
     }
     _ad = null;
@@ -139,6 +164,9 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   void dispose() {
+    AdLogger.verbose(
+      'dispose: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+    );
     _disposeInternalAd();
     super.dispose();
   }
@@ -155,7 +183,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
 
     final adToDisplay = _ad;
-    if (adToDisplay != null && (_ad?.isMounted  ?? false)) {
+    if (adToDisplay != null && (_ad?.isMounted ?? false)) {
       return SizedBox(
         width: adToDisplay.size.width.toDouble(),
         height: adToDisplay.size.height.toDouble(),
@@ -163,7 +191,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       );
     }
 
-    if(!_isAdManagedInternally && (_ad?.isMounted ?? false)){
+    if (!_isAdManagedInternally && !(_ad?.isMounted ?? false)) {
+      AdLogger.warning(
+        'External ad is no longer mounted. Attempting to reload.',
+      );
       _isAdManagedInternally = true;
       _loadAd();
     }
