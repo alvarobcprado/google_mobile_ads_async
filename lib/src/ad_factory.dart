@@ -74,10 +74,10 @@ class AdFactory {
       nativeAdOptions: nativeAdOptions,
       factoryId: factoryId,
       listener: listener,
-      nativeTemplateStyle: nativeTemplateStyle ??
-          NativeTemplateStyle(
-            templateType: TemplateType.medium,
-          ),
+      nativeTemplateStyle: factoryId != null
+          ? null
+          : nativeTemplateStyle ??
+              NativeTemplateStyle(templateType: TemplateType.medium),
     ).load();
   }
 

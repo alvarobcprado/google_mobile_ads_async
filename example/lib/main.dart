@@ -18,7 +18,7 @@ Future<void> main() async {
   // Initialize the Google Mobile Ads SDK.
   await MobileAds.instance.initialize();
   // Preload ads using the cache manager.
-  _preloadAds().ignore();
+  await _preloadAds();
   runApp(const MyApp());
 }
 
@@ -27,8 +27,6 @@ Future<void> _preloadAds() async {
   Future.wait([
     cacheManager.preloadAd(interstitialAdUnitId, AdType.interstitial),
     cacheManager.preloadAd(rewardedAdUnitId, AdType.rewarded),
-    // Preload ads for the widgets too
-    cacheManager.preloadAd(bannerAdUnitId, AdType.banner, size: AdSize.banner),
   ]);
 }
 
@@ -104,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('Ad Demo'),
       ),
-      body: Center(
+      body: SizedBox.expand(
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -127,6 +125,20 @@ class _MyHomePageState extends State<MyHomePage> {
               const Text(
                 'Widget-Based Ads',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              const Text('Native Ad', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 380,
+                child: NativeAdWidget(
+                  adUnitId: nativeAdUnitId,
+                  nativeTemplateStyle: NativeTemplateStyle(
+                    templateType: TemplateType.medium,
+                    cornerRadius: 40,
+                    mainBackgroundColor: Colors.red,
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               const Text('Banner Ad (defaults to empty space)',

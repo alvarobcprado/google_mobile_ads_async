@@ -4,9 +4,6 @@ import 'package:google_mobile_ads_async/src/ad_loader.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
 import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
-/// A builder function that creates a widget to display a [NativeAd].
-typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
-
 /// {@template nativeAdWidget}
 /// Displays a NativeAd with priority-based logic.
 ///
@@ -20,12 +17,12 @@ typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
 class NativeAdWidget extends StatefulWidget {
   ////@{macro nativeAdWidget}
   const NativeAdWidget({
-    required this.nativeAdBuilder,
     super.key,
     this.ad,
     this.adUnitId,
     this.adRequest = const AdRequest(),
     this.factoryId,
+    this.nativeTemplateStyle,
     this.nativeAdOptions,
     this.loadingBuilder,
     this.errorBuilder,
@@ -40,9 +37,6 @@ class NativeAdWidget extends StatefulWidget {
   /// The ad unit ID for loading an ad, used only if [ad] is null.
   final String? adUnitId;
 
-  /// The builder function to create the ad's UI.
-  final NativeAdBuilder nativeAdBuilder;
-
   /// The ad request to use when loading with [adUnitId].
   final AdRequest adRequest;
 
@@ -51,6 +45,9 @@ class NativeAdWidget extends StatefulWidget {
 
   /// Optional options for the native ad.
   final NativeAdOptions? nativeAdOptions;
+
+  /// Optional template style for native ads.
+  final NativeTemplateStyle? nativeTemplateStyle;
 
   /// A builder for the loading state. If null, a [SizedBox.shrink] is shown.
   final AdLoadingBuilder? loadingBuilder;
@@ -85,7 +82,10 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
       'didUpdateWidget: ${widget.runtimeType} with AdUnitId: '
       '${widget.adUnitId}',
     );
-    if (widget.ad != oldWidget.ad || widget.adUnitId != oldWidget.adUnitId) {
+    if (widget.ad != oldWidget.ad ||
+        widget.adUnitId != oldWidget.adUnitId ||
+        widget.factoryId != oldWidget.factoryId ||
+        widget.nativeTemplateStyle != oldWidget.nativeTemplateStyle) {
       _disposeInternalAd();
       _resolveAd();
     }
@@ -128,6 +128,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
         request: widget.adRequest,
         factoryId: widget.factoryId,
         nativeAdOptions: widget.nativeAdOptions,
+        nativeTemplateStyle: widget.nativeTemplateStyle,
       );
 
       if (mounted) {
@@ -188,7 +189,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
 
     final adToDisplay = _ad;
     if (adToDisplay != null) {
-      return widget.nativeAdBuilder(context, adToDisplay);
+      return AdWidget(ad: adToDisplay);
     }
 
     return const SizedBox.shrink();
