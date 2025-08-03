@@ -130,10 +130,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: NativeAdWidget(
                   adUnitId: nativeAdUnitId,
                   nativeAdBuilder: (context, ad) => AdWidget(ad: ad),
+                  loadingBuilder: (context) => const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                  errorBuilder: (context, error) => Center(
+                    child: Text('Error loading ad: $error'),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Banner Ad', style: TextStyle(fontSize: 18)),
+              const Text('Banner Ad (defaults to empty space)',
+                  style: TextStyle(fontSize: 18)),
               const SizedBox(height: 10),
               const BannerAdWidget(
                 adUnitId: bannerAdUnitId,

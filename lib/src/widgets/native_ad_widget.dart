@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
 /// A builder function that creates a widget to display a [NativeAd].
 typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
@@ -11,6 +12,9 @@ typedef NativeAdBuilder = Widget Function(BuildContext context, NativeAd ad);
 /// - If [ad] is provided, it will be displayed with the highest priority, and
 ///  [adUnitId] will be ignored.
 /// - If [ad] is null, a new ad will be loaded using [adUnitId].
+///
+/// This widget provides optional builders for loading and error states.
+/// If they are not provided, a [SizedBox.shrink] will be displayed.
 /// {@endtemplate}
 class NativeAdWidget extends StatefulWidget {
   ////@{macro nativeAdWidget}
@@ -22,6 +26,8 @@ class NativeAdWidget extends StatefulWidget {
     this.adRequest = const AdRequest(),
     this.factoryId,
     this.nativeAdOptions,
+    this.loadingBuilder,
+    this.errorBuilder,
   }) : assert(
           ad != null || adUnitId != null,
           'Either ad or adUnitId must be provided.',
@@ -44,6 +50,12 @@ class NativeAdWidget extends StatefulWidget {
 
   /// Optional options for the native ad.
   final NativeAdOptions? nativeAdOptions;
+
+  /// A builder for the loading state. If null, a [SizedBox.shrink] is shown.
+  final AdLoadingBuilder? loadingBuilder;
+
+  /// A builder for the error state. If null, a [SizedBox.shrink] is shown.
+  final AdErrorBuilder? errorBuilder;
 
   @override
   State<NativeAdWidget> createState() => _NativeAdWidgetState();
@@ -136,11 +148,12 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator.adaptive());
+      return widget.loadingBuilder?.call(context) ?? const SizedBox.shrink();
     }
 
     if (_error != null) {
-      return const Center(child: Icon(Icons.error_outline, color: Colors.red));
+      return widget.errorBuilder?.call(context, _error!) ??
+          const SizedBox.shrink();
     }
 
     final adToDisplay = _ad;

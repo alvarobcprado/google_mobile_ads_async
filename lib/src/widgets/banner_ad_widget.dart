@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
 /// {@template banner_ad_widget}
 /// Displays a BannerAd with priority-based logic.
@@ -8,6 +9,9 @@ import 'package:google_mobile_ads_async/src/ad_loader.dart';
 /// - If [ad] is provided, it will be displayed with the highest priority, and
 ///  [adUnitId] will be ignored.
 /// - If [ad] is null, a new ad will be loaded using [adUnitId].
+///
+/// This widget provides optional builders for loading and error states.
+/// If they are not provided, a [SizedBox.shrink] will be displayed.
 /// {@endtemplate}
 class BannerAdWidget extends StatefulWidget {
   /// {@macro banner_ad_widget}
@@ -17,6 +21,8 @@ class BannerAdWidget extends StatefulWidget {
     this.adUnitId,
     this.adRequest = const AdRequest(),
     this.size,
+    this.loadingBuilder,
+    this.errorBuilder,
   }) : assert(
           ad != null || (adUnitId != null && size != null),
           'If ad is not provided, then adUnitId and size must be provided.',
@@ -33,6 +39,12 @@ class BannerAdWidget extends StatefulWidget {
 
   /// The size of the banner ad. Required if loading with [adUnitId].
   final AdSize? size;
+
+  /// A builder for the loading state. If null, a [SizedBox.shrink] is shown.
+  final AdLoadingBuilder? loadingBuilder;
+
+  /// A builder for the error state. If null, a [SizedBox.shrink] is shown.
+  final AdErrorBuilder? errorBuilder;
 
   @override
   State<BannerAdWidget> createState() => _BannerAdWidgetState();
@@ -134,21 +146,26 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator.adaptive());
+      return widget.loadingBuilder?.call(context) ?? const SizedBox.shrink();
     }
 
     if (_error != null) {
-      // Optional: Display a more informative error widget.
-      return const Center(child: Icon(Icons.error_outline, color: Colors.red));
+      return widget.errorBuilder?.call(context, _error!) ??
+          const SizedBox.shrink();
     }
 
     final adToDisplay = _ad;
-    if (adToDisplay != null) {
+    if (adToDisplay != null && (_ad?.isMounted  ?? false)) {
       return SizedBox(
         width: adToDisplay.size.width.toDouble(),
         height: adToDisplay.size.height.toDouble(),
         child: AdWidget(ad: adToDisplay),
       );
+    }
+
+    if(!_isAdManagedInternally && (_ad?.isMounted ?? false)){
+      _isAdManagedInternally = true;
+      _loadAd();
     }
 
     // Returns an empty container if there is no ad to display.

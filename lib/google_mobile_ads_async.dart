@@ -7,6 +7,7 @@ export 'package:google_mobile_ads/google_mobile_ads.dart';
 
 export 'src/ad_cache_manager.dart';
 export 'src/ad_load_exception.dart';
+export 'src/widgets/ad_builders.dart';
 export 'src/widgets/banner_ad_widget.dart';
 export 'src/widgets/native_ad_widget.dart';
 
