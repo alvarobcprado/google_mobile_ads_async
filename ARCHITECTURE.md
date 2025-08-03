@@ -127,7 +127,6 @@ The implementation will be divided into the following steps:
 - [X] **Step 5: Develop Display Widgets (Wrappers)**
   - Implement `BannerAdWidget` to display banner ads.
   - Implement `NativeAdWidget` with a `nativeAdBuilder` for custom rendering.
-  - Refactor the existing `NativeAdCard` to use `NativeAdWidget` internally.
 
 - [X] **Step 6: API Documentation**
   - Update all documentation comments (`///`) to cover the new expanded API, including the **Ad Wrappers**, `AdCacheManager`, and all new loading methods.

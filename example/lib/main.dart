@@ -117,12 +117,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: _showRewardedAd,
                 child: const Text('Show Rewarded Ad'),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               const Text(
                 'Widget-Based Ads',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
+              const Text('Native Ad', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 320,
+                child: NativeAdWidget(
+                  adUnitId: nativeAdUnitId,
+                  nativeAdBuilder: (context, ad) => AdWidget(ad: ad),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text('Banner Ad', style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 10),
               const BannerAdWidget(
                 adUnitId: bannerAdUnitId,
                 size: AdSize.mediumRectangle,
