@@ -183,7 +183,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
 
     final adToDisplay = _ad;
-    if (adToDisplay != null && (_ad?.isMounted ?? false)) {
+    final isAdAlreadyMounted = adToDisplay?.isMounted ?? false;
+    if (adToDisplay != null && !isAdAlreadyMounted) {
       return SizedBox(
         width: adToDisplay.size.width.toDouble(),
         height: adToDisplay.size.height.toDouble(),

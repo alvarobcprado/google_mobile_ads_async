@@ -19,7 +19,6 @@ class AdLogger {
 
   /// Sets the desired log level for the entire package.
   ///
-  /// Defaults to `Level.off`.
   // ignore: use_setters_to_change_properties
   static void setLevel(Level level) {
     Logger.level = level;
