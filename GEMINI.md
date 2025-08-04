@@ -6,6 +6,7 @@
 This project uses the `mocktail` package for mocking and testing.
 
 # Steps to Run when adding a New Feature
+- For each new feature, plan the steps to implement it, then create a todo list for each step needed to implement the feature.
 - If a new package is added, run `flutter pub get` to fetch dependencies.
 - If the feature will add new/modify existing APIs, implement the unit tests for the new/modified APIs.
 - If the feature is completed, run `flutter analyze` to check for any linting errors and warnings and then fix them.
