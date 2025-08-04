@@ -145,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: TextStyle(fontSize: 18)),
               const SizedBox(height: 10),
               const BannerAdWidget(
-                adUnitId: bannerAdUnitId,
+                adUnitIds: [bannerAdUnitId],
                 size: AdSize.mediumRectangle,
               ),
             ],
@@ -156,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // otherwise it will load a new one using the adUnitId.
       bottomNavigationBar: BannerAdWidget(
         ad: cachedBanner,
-        adUnitId: bannerAdUnitId,
+        adUnitIds: const [bannerAdUnitId],
         size: AdSize.banner,
       ),
     );

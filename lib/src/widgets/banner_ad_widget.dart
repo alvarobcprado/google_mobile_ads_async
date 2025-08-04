@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
-import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
 /// {@template banner_ad_widget}
 /// Displays a BannerAd with priority-based logic.
 ///
-/// - If [ad] is provided, it will be displayed with the highest priority, and
-///  [adUnitId] will be ignored.
-/// - If [ad] is null, a new ad will be loaded using [adUnitId].
+/// - If [ad] is provided, it will be displayed with the highest priority.
+/// - If [ad] is null, a new ad will be loaded using [adUnitIds].
 ///
 /// This widget provides optional builders for loading and error states.
 /// If they are not provided, a [SizedBox.shrink] will be displayed.
@@ -19,26 +16,27 @@ class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({
     super.key,
     this.ad,
-    this.adUnitId,
+    this.adUnitIds,
     this.adRequest = const AdRequest(),
     this.size,
     this.loadingBuilder,
     this.errorBuilder,
   }) : assert(
-          ad != null || (adUnitId != null && size != null),
-          'If ad is not provided, then adUnitId and size must be provided.',
+          ad != null || (adUnitIds != null && size != null),
+          'If ad is not provided, then size and an adUnitIds list must be'
+          ' provided.',
         );
 
-  /// A pre-loaded ad to be displayed. It has priority over [adUnitId].
+  /// A pre-loaded ad to be displayed. It has priority over other load params.
   final BannerAd? ad;
 
-  /// The ad unit ID for loading an ad, used only if [ad] is null.
-  final String? adUnitId;
+  /// A list of ad unit IDs to be tried in a waterfall sequence.
+  final List<String>? adUnitIds;
 
-  /// The ad request to use when loading with [adUnitId].
+  /// The ad request to use when loading an ad.
   final AdRequest adRequest;
 
-  /// The size of the banner ad. Required if loading with [adUnitId].
+  /// The size of the banner ad. Required if loading a new ad.
   final AdSize? size;
 
   /// A builder for the loading state. If null, a [SizedBox.shrink] is shown.
@@ -52,9 +50,7 @@ class BannerAdWidget extends StatefulWidget {
 }
 
 class _BannerAdWidgetState extends State<BannerAdWidget> {
-  // The ad that the widget is currently managing or displaying.
   BannerAd? _ad;
-  // Flag to determine if _ad was created and is managed by this widget.
   bool _isAdManagedInternally = false;
 
   bool _isLoading = false;
@@ -64,7 +60,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void initState() {
     super.initState();
     AdLogger.verbose(
-      'initState: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+      'initState: ${widget.runtimeType} with AdUnitIds: ${widget.adUnitIds}',
     );
     _resolveAd();
   }
@@ -73,11 +69,12 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void didUpdateWidget(BannerAdWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     AdLogger.verbose(
-      'didUpdateWidget: ${widget.runtimeType} with AdUnitId: '
-      '${widget.adUnitId}',
+      'didUpdateWidget: ${widget.runtimeType} with AdUnitIds: '
+      '${widget.adUnitIds}',
     );
     // If the source of the ad changes, we need to re-evaluate.
-    if (widget.ad != oldWidget.ad || widget.adUnitId != oldWidget.adUnitId) {
+    if (widget.ad != oldWidget.ad ||
+        widget.adUnitIds != oldWidget.adUnitIds) {
       _disposeInternalAd();
       _resolveAd();
     }
@@ -95,8 +92,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         _error = null;
       });
     }
-    // Priority 2: Load an ad internally using adUnitId.
-    else if (widget.adUnitId != null) {
+    // Priority 2: Load an ad internally using adUnitIds.
+    else if (widget.adUnitIds != null) {
       AdLogger.debug(
         'No external ad provided, loading internally for '
         '${widget.runtimeType}.',
@@ -106,7 +103,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
   }
 
-  /// Loads the ad using the adUnitId.
+  /// Loads the ad using the adUnitIds.
   Future<void> _loadAd() async {
     if (!mounted) return;
     AdLogger.debug('Internal ad load started for ${widget.runtimeType}');
@@ -117,9 +114,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     });
 
     try {
-      final adLoader = AsyncAdLoader();
-      final ad = await adLoader.loadBannerAd(
-        adUnitId: widget.adUnitId!,
+      final ad = await GoogleMobileAdsAsync.loadBannerAd(
+        adUnitIds: widget.adUnitIds!,
         size: widget.size!,
         request: widget.adRequest,
       );
@@ -134,7 +130,6 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         AdLogger.warning(
           'Widget was disposed while ad was loading. Disposing ad.',
         );
-        // If the widget was disposed while the ad was loading, dispose the ad.
         await ad.dispose();
       }
     } catch (e) {
@@ -165,7 +160,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   @override
   void dispose() {
     AdLogger.verbose(
-      'dispose: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+      'dispose: ${widget.runtimeType} with AdUnitIds: ${widget.adUnitIds}',
     );
     _disposeInternalAd();
     super.dispose();
@@ -183,21 +178,12 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     }
 
     final adToDisplay = _ad;
-    final isAdAlreadyMounted = adToDisplay?.isMounted ?? false;
-    if (adToDisplay != null && !isAdAlreadyMounted) {
+    if (adToDisplay != null) {
       return SizedBox(
         width: adToDisplay.size.width.toDouble(),
         height: adToDisplay.size.height.toDouble(),
         child: AdWidget(ad: adToDisplay),
       );
-    }
-
-    if (!_isAdManagedInternally && !(_ad?.isMounted ?? false)) {
-      AdLogger.warning(
-        'External ad is no longer mounted. Attempting to reload.',
-      );
-      _isAdManagedInternally = true;
-      _loadAd();
     }
 
     // Returns an empty container if there is no ad to display.
