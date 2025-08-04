@@ -35,13 +35,13 @@ In addition to simplifying ad loading, the package will introduce a **pre-loadin
 
 ## 3. Component Architecture
 
-The architecture will consist of three main components: `AsyncAdLoader`, `AdCacheManager`, and `Ad Wrappers`.
+The architecture will consist of four main components: `AsyncAdLoader`, `AdFactory`, `AdCacheManager`, and `Ad Wrappers`.
 
 ### Component 1: `AsyncAdLoader`
 
 The base layer that converts `google_mobile_ads` callbacks into `Future`s.
 
-- **Responsibility:** Orchestrate the loading process for each ad type.
+- **Responsibility:** Orchestrate the loading process for each ad type. It delegates the actual ad instantiation to the `AdFactory`.
 - **Main Methods:**
   ```dart
   // One method for each ad type
@@ -52,9 +52,17 @@ The base layer that converts `google_mobile_ads` callbacks into `Future`s.
   Future<NativeAd> loadNativeAd(...)
   Future<AppOpenAd> loadAppOpenAd(...)
   ```
-- **Internal Logic:** Each method will use a `Completer` to wrap the `onAdLoaded` and `onAdFailedToLoad` logic, returning a `Future` that resolves with the ad or throws an `AdLoadException`.
+- **Internal Logic:** Each method uses a `Completer` to wrap the `onAdLoaded` and `onAdFailedToLoad` logic, returning a `Future` that resolves with the ad or throws an `AdLoadException`. It uses an `AdFactory` instance to create the ad objects, which improves testability.
 
-### Component 2: `AdCacheManager`
+### Component 2: `AdFactory`
+
+A factory class that abstracts the instantiation of ad objects from the `google_mobile_ads` package.
+
+- **Responsibility:** Wrap the static ad loading methods (e.g., `BannerAd(...)`, `InterstitialAd.load(...)`) from the official package.
+- **Purpose:** This component's primary goal is to enable **testability**. By abstracting the direct calls to the `google_mobile_ads` package, it allows `AsyncAdLoader` to be tested with a mock `AdFactory`, isolating the loader's logic from the underlying SDK.
+- **Internal Logic:** Contains methods like `loadBannerAd`, `loadInterstitialAd`, etc., that directly call the corresponding methods from the `google_mobile_ads` package.
+
+### Component 3: `AdCacheManager`
 
 A high-level layer for managing the ad lifecycle.
 
@@ -72,7 +80,7 @@ A high-level layer for managing the ad lifecycle.
   ```
 - **Internal Logic:** It will use a `Map<String, Ad>` to store loaded ads, using the `adUnitId` as the key. It will call `AsyncAdLoader` methods to perform the loading.
 
-### Component 3: Display Widgets (Ad Wrappers)
+### Component 4: Display Widgets (Ad Wrappers)
 
 To simplify the integration of ads directly into the Flutter widget tree, the package provides a UI layer.
 
@@ -88,14 +96,15 @@ To simplify the integration of ads directly into the Flutter widget tree, the pa
 ### Flow Diagram (Preloading)
 
 ```
-Developer App      AdCacheManager        AsyncAdLoader         google_mobile_ads
-      |                  |                     |                       |
-      |-- preloadAd() -->|                     |                       |
-      |                  |-- load<AdType>() -->|                       |
-      |                  |                     |-- <AdType>.load() --->| (with callbacks)
-      |                  |                     |                       |
-      |                  |                     |<-- onAdLoaded(ad) ----|
-      |                  |<-- Future<Ad> ------|                       |
+Developer App      AdCacheManager        AsyncAdLoader           AdFactory         google_mobile_ads
+      |                  |                     |                     |                       |
+      |-- preloadAd() -->|                     |                     |                       |
+      |                  |-- load<AdType>() -->|                     |                       |
+      |                  |                     |-- load<AdType>() -->|                       |
+      |                  |                     |                     |-- <AdType>.load() --->| (with callbacks)
+      |                  |                     |                     |                       |
+      |                  |                     |<-- onAdLoaded(ad) --|-----------------------|
+      |                  |<-- Future<Ad> ------|                     |                       |
       |                  |-- (Stores 'ad' in Map)
       |                  |
       | (later)          |
