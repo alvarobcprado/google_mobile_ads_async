@@ -73,8 +73,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       '${widget.adUnitIds}',
     );
     // If the source of the ad changes, we need to re-evaluate.
-    if (widget.ad != oldWidget.ad ||
-        widget.adUnitIds != oldWidget.adUnitIds) {
+    if (widget.ad != oldWidget.ad || widget.adUnitIds != oldWidget.adUnitIds) {
       _disposeInternalAd();
       _resolveAd();
     }
