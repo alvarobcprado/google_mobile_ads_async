@@ -102,10 +102,10 @@ UI components for easy integration into the widget tree.
 
 The implementation will follow a Test-Driven Development cycle.
 
-- [ ] **Step 1: Update Architecture Document**
+- [X] **Step 1: Update Architecture Document**
   - The `ARCHITECTURE.md` is updated to reflect the new, simplified waterfall design.
 
-- [ ] **Step 2: Write Failing Tests for `AdLoaderOrchestrator`**
+- [X] **Step 2: Write Failing Tests for `AdLoaderOrchestrator`**
   - Create a new test file for the orchestrator.
   - Write tests that cover:
     - Loading with a single `adUnitId`.
@@ -114,17 +114,17 @@ The implementation will follow a Test-Driven Development cycle.
     - Waterfall: Failure of all IDs, throwing `AdWaterfallException`.
   - These tests will fail because the implementation doesn't exist yet.
 
-- [ ] **Step 3: Implement `AdLoaderOrchestrator` and `AdWaterfallException`**
+- [X] **Step 3: Implement `AdLoaderOrchestrator` and `AdWaterfallException`**
   - Create the `AdWaterfallException` class.
   - Create the `AdLoaderOrchestrator` class with the waterfall logic.
   - Run the tests from Step 2 until they all pass.
 
-- [ ] **Step 4: Refactor and Integrate**
+- [X] **Step 4: Refactor and Integrate**
   - Update the `GoogleMobileAdsAsync` facade to use the new `AdLoaderOrchestrator`.
   - Update `AdCacheManager` and the UI Widgets (`BannerAdWidget`, `NativeAdWidget`) to accept `adUnitIds` and pass them to the facade.
   - Write/update tests for the cache manager and widgets to ensure they handle the waterfall parameters correctly.
 
-- [ ] **Step 5: Documentation and Example**
+- [X] **Step 5: Documentation and Example**
   - Update all API documentation (`///`) for the new parameters.
   - Update the `example/` app to demonstrate the waterfall feature.
 
@@ -132,10 +132,10 @@ The implementation will follow a Test-Driven Development cycle.
 
 ## 5. Usage Example (Final Result)
 
-**Scenario 1: Simple Loading (No Change)**
+**Scenario 1: Loading a Single Ad**
 ```dart
 final ad = await GoogleMobileAdsAsync.loadInterstitialAd(
-  adUnitId: 'your_ad_unit_id',
+  adUnitIds: ['your_ad_unit_id'],
 );
 ```
 

@@ -31,3 +31,4 @@ build/
 # Project-specific files
 .env
 PROJECT.md
+.gemini/settings.json
