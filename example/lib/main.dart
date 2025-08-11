@@ -24,9 +24,22 @@ Future<void> main() async {
 
 Future<void> _preloadAds() async {
   final cacheManager = AdCacheManager.instance;
-  Future.wait([
-    cacheManager.preloadAd(interstitialAdUnitId, AdType.interstitial),
-    cacheManager.preloadAd(rewardedAdUnitId, AdType.rewarded),
+  // Preload multiple ads in parallel.
+  await Future.wait([
+    cacheManager.preloadAd(
+      adUnitIds: [interstitialAdUnitId],
+      type: AdType.interstitial,
+    ),
+    cacheManager.preloadAd(
+      adUnitIds: [rewardedAdUnitId],
+      type: AdType.rewarded,
+    ),
+    // Preload a banner for the bottom navigation bar.
+    cacheManager.preloadAd(
+      adUnitIds: [bannerAdUnitId],
+      type: AdType.banner,
+      size: AdSize.banner,
+    ),
   ]);
 }
 
@@ -62,28 +75,48 @@ class _MyHomePageState extends State<MyHomePage> {
   // --- Ad Showing Methods ---
 
   void _showInterstitialAd() {
-    final ad =
-        AdCacheManager.instance.getAd<InterstitialAd>(interstitialAdUnitId);
+    // Get the ad from the cache.
+    final ad = AdCacheManager.instance.getAd<InterstitialAd>([
+      interstitialAdUnitId,
+    ]);
+
     if (ad != null) {
       ad.show();
       // Preload the next one.
-      AdCacheManager.instance
-          .preloadAd(interstitialAdUnitId, AdType.interstitial);
+      AdCacheManager.instance.preloadAd(
+        adUnitIds: [interstitialAdUnitId],
+        type: AdType.interstitial,
+      );
     } else {
       _showSnackBar('Interstitial ad is not ready yet.');
+      // Optionally, load the ad if it wasn't in the cache.
+      AdCacheManager.instance.preloadAd(
+        adUnitIds: [interstitialAdUnitId],
+        type: AdType.interstitial,
+      );
     }
   }
 
   void _showRewardedAd() {
-    final ad = AdCacheManager.instance.getAd<RewardedAd>(rewardedAdUnitId);
+    // Get the ad from the cache.
+    final ad = AdCacheManager.instance.getAd<RewardedAd>([rewardedAdUnitId]);
+
     if (ad != null) {
       ad.show(onUserEarnedReward: (ad, reward) {
         _showSnackBar('Reward earned: ${reward.amount} ${reward.type}');
       });
       // Preload the next one.
-      AdCacheManager.instance.preloadAd(rewardedAdUnitId, AdType.rewarded);
+      AdCacheManager.instance.preloadAd(
+        adUnitIds: [rewardedAdUnitId],
+        type: AdType.rewarded,
+      );
     } else {
       _showSnackBar('Rewarded ad is not ready yet.');
+      // Optionally, load the ad if it wasn't in the cache.
+      AdCacheManager.instance.preloadAd(
+        adUnitIds: [rewardedAdUnitId],
+        type: AdType.rewarded,
+      );
     }
   }
 
@@ -95,9 +128,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Try to get the cached ads.
+    // Try to get the cached banner ad.
     final cachedBanner =
-        AdCacheManager.instance.getAd<BannerAd>(bannerAdUnitId);
+        AdCacheManager.instance.getAd<BannerAd>([bannerAdUnitId]);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ad Demo'),
@@ -107,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              const SizedBox(height: 20),
               const Text(
                 'Cached Ads (Programmatic)',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -121,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: _showRewardedAd,
                 child: const Text('Show Rewarded Ad'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               const Text(
                 'Widget-Based Ads',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -132,22 +167,29 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(
                 height: 380,
                 child: NativeAdWidget(
-                  adUnitId: nativeAdUnitId,
+                  // The widget will load the ad using the adUnitIds.
+                  adUnitIds: const [nativeAdUnitId],
+                  loadingBuilder: (_) => const CircularProgressIndicator(),
+                  errorBuilder: (_, error) =>
+                      Text('Native ad failed to load: $error'),
                   nativeTemplateStyle: NativeTemplateStyle(
                     templateType: TemplateType.medium,
-                    cornerRadius: 40,
-                    mainBackgroundColor: Colors.red,
+                    cornerRadius: 12,
+                    mainBackgroundColor: Colors.grey.shade200,
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Banner Ad (defaults to empty space)',
-                  style: TextStyle(fontSize: 18)),
+              const Text('Banner Ad (in-line)', style: TextStyle(fontSize: 18)),
               const SizedBox(height: 10),
-              const BannerAdWidget(
-                adUnitIds: [bannerAdUnitId],
+              BannerAdWidget(
+                adUnitIds: const [bannerAdUnitId],
                 size: AdSize.mediumRectangle,
+                loadingBuilder: (_) => const CircularProgressIndicator(),
+                errorBuilder: (_, error) =>
+                    Text('Banner ad failed to load: $error'),
               ),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -158,6 +200,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ad: cachedBanner,
         adUnitIds: const [bannerAdUnitId],
         size: AdSize.banner,
+        errorBuilder: (_, error) =>
+            Text('Bottom banner failed to load: $error'),
       ),
     );
   }

@@ -123,16 +123,15 @@ Preload ads to have them ready for instant display. This is ideal for placements
 
 ```dart
 // 1. Pre-load the ad, for example, on the main menu.
-final cacheManager = AdCacheManager();
+final cacheManager = AdCacheManager.instance;
 cacheManager.preloadAd(
   adUnitIds: ['rewarded_main', 'rewarded_fallback'],
-  format: AdFormat.rewarded,
+  type: AdType.rewarded,
 );
 
 // 2. When needed, get the ad from the cache.
-final rewardedAd = await cacheManager.getAd(
-  adUnitIds: ['rewarded_main', 'rewarded_fallback'],
-  format: AdFormat.rewarded,
+final rewardedAd = cacheManager.getAd<RewardedAd>(
+  ['rewarded_main', 'rewarded_fallback'],
 );
 
 if (rewardedAd != null) {

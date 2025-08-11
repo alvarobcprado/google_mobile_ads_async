@@ -1,5 +1,5 @@
 name: google_mobile_ads_async
-description: "A new Flutter package project."
+description: "A powerful, async-first wrapper for the official google_mobile_ads package. Load ads with Futures, implement ad waterfalls, use declarative widgets, and leverage a built-in cache."
 version: 0.0.1
 
 environment:
