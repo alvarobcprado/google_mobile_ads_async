@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:google_mobile_ads_async/src/ad_loader.dart';
+import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
-import 'package:google_mobile_ads_async/src/widgets/ad_builders.dart';
 
-/// {@template nativeAdWidget}
+/// {@template native_ad_widget}
 /// Displays a NativeAd with priority-based logic.
 ///
-/// - If [ad] is provided, it will be displayed with the highest priority, and
-///  [adUnitId] will be ignored.
-/// - If [ad] is null, a new ad will be loaded using [adUnitId].
+/// - If [ad] is provided, it will be displayed with the highest priority.
+/// - If [ad] is null, a new ad will be loaded using [adUnitIds].
 ///
 /// This widget provides optional builders for loading and error states.
 /// If they are not provided, a [SizedBox.shrink] will be displayed.
 /// {@endtemplate}
 class NativeAdWidget extends StatefulWidget {
-  ////@{macro nativeAdWidget}
+  /// {@macro native_ad_widget}
   const NativeAdWidget({
     super.key,
     this.ad,
-    this.adUnitId,
+    this.adUnitIds,
     this.adRequest = const AdRequest(),
     this.factoryId,
     this.nativeTemplateStyle,
@@ -27,17 +24,17 @@ class NativeAdWidget extends StatefulWidget {
     this.loadingBuilder,
     this.errorBuilder,
   }) : assert(
-          ad != null || adUnitId != null,
-          'Either ad or adUnitId must be provided.',
+          ad != null || adUnitIds != null,
+          'Either ad or an adUnitIds list must be provided.',
         );
 
-  /// A pre-loaded ad to be displayed. It has priority over [adUnitId].
+  /// A pre-loaded ad to be displayed. It has priority over other load params.
   final NativeAd? ad;
 
-  /// The ad unit ID for loading an ad, used only if [ad] is null.
-  final String? adUnitId;
+  /// A list of ad unit IDs to be tried in a waterfall sequence.
+  final List<String>? adUnitIds;
 
-  /// The ad request to use when loading with [adUnitId].
+  /// The ad request to use when loading an ad.
   final AdRequest adRequest;
 
   /// Optional factory ID for native ad formats.
@@ -70,7 +67,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   void initState() {
     super.initState();
     AdLogger.verbose(
-      'initState: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+      'initState: ${widget.runtimeType} with AdUnitIds: ${widget.adUnitIds}',
     );
     _resolveAd();
   }
@@ -79,11 +76,12 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   void didUpdateWidget(NativeAdWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     AdLogger.verbose(
-      'didUpdateWidget: ${widget.runtimeType} with AdUnitId: '
-      '${widget.adUnitId}',
+      'didUpdateWidget: ${widget.runtimeType} with AdUnitIds: '
+      '${widget.adUnitIds}',
     );
+    // If the source of the ad changes, we need to re-evaluate.
     if (widget.ad != oldWidget.ad ||
-        widget.adUnitId != oldWidget.adUnitId ||
+        widget.adUnitIds != oldWidget.adUnitIds ||
         widget.factoryId != oldWidget.factoryId ||
         widget.nativeTemplateStyle != oldWidget.nativeTemplateStyle) {
       _disposeInternalAd();
@@ -91,18 +89,20 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     }
   }
 
+  /// Decides which ad to use based on the priority logic.
   void _resolveAd() {
+    // Priority 1: Use the externally provided ad.
     if (widget.ad != null) {
-      AdLogger.debug(
-        'Using externally provided ad for ${widget.runtimeType}.',
-      );
+      AdLogger.debug('Using externally provided ad for ${widget.runtimeType}.');
       setState(() {
         _ad = widget.ad;
         _isAdManagedInternally = false;
         _isLoading = false;
         _error = null;
       });
-    } else if (widget.adUnitId != null) {
+    }
+    // Priority 2: Load an ad internally using adUnitIds.
+    else if (widget.adUnitIds != null) {
       AdLogger.debug(
         'No external ad provided, loading internally for '
         '${widget.runtimeType}.',
@@ -112,6 +112,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     }
   }
 
+  /// Loads the ad using the adUnitIds.
   Future<void> _loadAd() async {
     if (!mounted) return;
     AdLogger.debug('Internal ad load started for ${widget.runtimeType}');
@@ -122,13 +123,11 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     });
 
     try {
-      final adLoader = AsyncAdLoader();
-      final ad = await adLoader.loadNativeAd(
-        adUnitId: widget.adUnitId!,
+      final ad = await GoogleMobileAdsAsync.loadNativeAd(
+        adUnitIds: widget.adUnitIds!,
         request: widget.adRequest,
         factoryId: widget.factoryId,
         nativeAdOptions: widget.nativeAdOptions,
-        nativeTemplateStyle: widget.nativeTemplateStyle,
       );
 
       if (mounted) {
@@ -157,6 +156,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
     }
   }
 
+  /// Disposes of the internal ad only if it was created by this widget.
   void _disposeInternalAd() {
     if (_isAdManagedInternally) {
       AdLogger.debug(
@@ -170,7 +170,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
   @override
   void dispose() {
     AdLogger.verbose(
-      'dispose: ${widget.runtimeType} with AdUnitId: ${widget.adUnitId}',
+      'dispose: ${widget.runtimeType} with AdUnitIds: ${widget.adUnitIds}',
     );
     _disposeInternalAd();
     super.dispose();
@@ -192,6 +192,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
       return AdWidget(ad: adToDisplay);
     }
 
+    // Returns an empty container if there is no ad to display.
     return const SizedBox.shrink();
   }
 }
