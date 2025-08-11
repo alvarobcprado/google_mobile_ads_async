@@ -18,22 +18,17 @@ class AdLoaderOrchestrator {
 
   final AsyncAdLoader _adLoader;
 
-  /// Loads a banner ad, trying each adUnitId in sequence until one succeeds.
-  Future<BannerAd> loadBannerAd({
+  /// A generic method to handle the waterfall loading logic for any ad type.
+  Future<T> _loadAdWithWaterfall<T extends Ad>({
     required List<String> adUnitIds,
-    required AdSize size,
-    AdRequest? request,
+    required Future<T> Function(String adUnitId) loadFunction,
   }) async {
     assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
 
     final errors = <AdLoadException>[];
     for (final id in adUnitIds) {
       try {
-        final ad = await _adLoader.loadBannerAd(
-          adUnitId: id,
-          size: size,
-          request: request,
-        );
+        final ad = await loadFunction(id);
         AdLogger.info('Waterfall: Successfully loaded ad for $id.');
         return ad;
       } on AdLoadException catch (e) {
@@ -46,6 +41,22 @@ class AdLoaderOrchestrator {
 
     AdLogger.error('Waterfall: All ad unit IDs failed to load.');
     throw AdWaterfallException(errors);
+  }
+
+  /// Loads a banner ad, trying each adUnitId in sequence until one succeeds.
+  Future<BannerAd> loadBannerAd({
+    required List<String> adUnitIds,
+    required AdSize size,
+    AdRequest? request,
+  }) {
+    return _loadAdWithWaterfall(
+      adUnitIds: adUnitIds,
+      loadFunction: (adUnitId) => _adLoader.loadBannerAd(
+        adUnitId: adUnitId,
+        size: size,
+        request: request,
+      ),
+    );
   }
 
   /// Loads an interstitial ad, trying each adUnitId in sequence until one
@@ -53,58 +64,28 @@ class AdLoaderOrchestrator {
   Future<InterstitialAd> loadInterstitialAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) async {
-    assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
-
-    final errors = <AdLoadException>[];
-    for (final id in adUnitIds) {
-      try {
-        final ad = await _adLoader.loadInterstitialAd(
-          adUnitId: id,
-          request: request,
-        );
-        AdLogger.info('Waterfall: Successfully loaded ad for $id.');
-        return ad;
-      } on AdLoadException catch (e) {
-        errors.add(e);
-        AdLogger.warning(
-          'Waterfall: Failed to load ad for $id. Trying next...',
-        );
-      }
-    }
-
-    AdLogger.error('Waterfall: All ad unit IDs failed to load.');
-    throw AdWaterfallException(errors);
+  }) {
+    return _loadAdWithWaterfall(
+      adUnitIds: adUnitIds,
+      loadFunction: (adUnitId) => _adLoader.loadInterstitialAd(
+        adUnitId: adUnitId,
+        request: request,
+      ),
+    );
   }
-
-  // Note: Similar methods for Rewarded, etc., would go here.
 
   /// Loads a rewarded ad, trying each adUnitId in sequence until one succeeds.
   Future<RewardedAd> loadRewardedAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) async {
-    assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
-
-    final errors = <AdLoadException>[];
-    for (final id in adUnitIds) {
-      try {
-        final ad = await _adLoader.loadRewardedAd(
-          adUnitId: id,
-          request: request,
-        );
-        AdLogger.info('Waterfall: Successfully loaded ad for $id.');
-        return ad;
-      } on AdLoadException catch (e) {
-        errors.add(e);
-        AdLogger.warning(
-          'Waterfall: Failed to load ad for $id. Trying next...',
-        );
-      }
-    }
-
-    AdLogger.error('Waterfall: All ad unit IDs failed to load.');
-    throw AdWaterfallException(errors);
+  }) {
+    return _loadAdWithWaterfall(
+      adUnitIds: adUnitIds,
+      loadFunction: (adUnitId) => _adLoader.loadRewardedAd(
+        adUnitId: adUnitId,
+        request: request,
+      ),
+    );
   }
 
   /// Loads a rewarded interstitial ad, trying each adUnitId in sequence until
@@ -112,28 +93,14 @@ class AdLoaderOrchestrator {
   Future<RewardedInterstitialAd> loadRewardedInterstitialAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) async {
-    assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
-
-    final errors = <AdLoadException>[];
-    for (final id in adUnitIds) {
-      try {
-        final ad = await _adLoader.loadRewardedInterstitialAd(
-          adUnitId: id,
-          request: request,
-        );
-        AdLogger.info('Waterfall: Successfully loaded ad for $id.');
-        return ad;
-      } on AdLoadException catch (e) {
-        errors.add(e);
-        AdLogger.warning(
-          'Waterfall: Failed to load ad for $id. Trying next...',
-        );
-      }
-    }
-
-    AdLogger.error('Waterfall: All ad unit IDs failed to load.');
-    throw AdWaterfallException(errors);
+  }) {
+    return _loadAdWithWaterfall(
+      adUnitIds: adUnitIds,
+      loadFunction: (adUnitId) => _adLoader.loadRewardedInterstitialAd(
+        adUnitId: adUnitId,
+        request: request,
+      ),
+    );
   }
 
   /// Loads a native ad, trying each adUnitId in sequence until one succeeds.
@@ -142,57 +109,29 @@ class AdLoaderOrchestrator {
     AdRequest? request,
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
-  }) async {
-    assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
-
-    final errors = <AdLoadException>[];
-    for (final id in adUnitIds) {
-      try {
-        final ad = await _adLoader.loadNativeAd(
-          adUnitId: id,
-          request: request,
-          nativeAdOptions: nativeAdOptions,
-          factoryId: factoryId,
-        );
-        AdLogger.info('Waterfall: Successfully loaded ad for $id.');
-        return ad;
-      } on AdLoadException catch (e) {
-        errors.add(e);
-        AdLogger.warning(
-          'Waterfall: Failed to load ad for $id. Trying next...',
-        );
-      }
-    }
-
-    AdLogger.error('Waterfall: All ad unit IDs failed to load.');
-    throw AdWaterfallException(errors);
+  }) {
+    return _loadAdWithWaterfall(
+      adUnitIds: adUnitIds,
+      loadFunction: (adUnitId) => _adLoader.loadNativeAd(
+        adUnitId: adUnitId,
+        request: request,
+        nativeAdOptions: nativeAdOptions,
+        factoryId: factoryId,
+      ),
+    );
   }
 
   /// Loads an app open ad, trying each adUnitId in sequence until one succeeds.
   Future<AppOpenAd> loadAppOpenAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) async {
-    assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
-
-    final errors = <AdLoadException>[];
-    for (final id in adUnitIds) {
-      try {
-        final ad = await _adLoader.loadAppOpenAd(
-          adUnitId: id,
-          request: request,
-        );
-        AdLogger.info('Waterfall: Successfully loaded ad for $id.');
-        return ad;
-      } on AdLoadException catch (e) {
-        errors.add(e);
-        AdLogger.warning(
-          'Waterfall: Failed to load ad for $id. Trying next...',
-        );
-      }
-    }
-
-    AdLogger.error('Waterfall: All ad unit IDs failed to load.');
-    throw AdWaterfallException(errors);
+  }) {
+    return _loadAdWithWaterfall(
+      adUnitIds: adUnitIds,
+      loadFunction: (adUnitId) => _adLoader.loadAppOpenAd(
+        adUnitId: adUnitId,
+        request: request,
+      ),
+    );
   }
 }
