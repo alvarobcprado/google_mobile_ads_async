@@ -102,9 +102,11 @@ class _MyHomePageState extends State<MyHomePage> {
     final ad = AdCacheManager.instance.getAd<RewardedAd>([rewardedAdUnitId]);
 
     if (ad != null) {
-      ad.show(onUserEarnedReward: (ad, reward) {
-        _showSnackBar('Reward earned: ${reward.amount} ${reward.type}');
-      });
+      ad.show(
+        onUserEarnedReward: (ad, reward) {
+          _showSnackBar('Reward earned: ${reward.amount} ${reward.type}');
+        },
+      );
       // Preload the next one.
       AdCacheManager.instance.preloadAd(
         adUnitIds: [rewardedAdUnitId],
