@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
-import 'package:google_mobile_ads_async/src/ad_loader.dart';
 import 'package:google_mobile_ads_async/src/ad_loader_orchestrator.dart';
 import 'package:google_mobile_ads_async/src/ad_waterfall_exception.dart';
+import 'package:google_mobile_ads_async/src/async_ad_loader.dart';
 import 'package:mocktail/mocktail.dart';
 
 // --- Mock Classes ---

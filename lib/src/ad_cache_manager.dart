@@ -31,7 +31,8 @@ enum AdType {
 class AdCacheManager {
   AdCacheManager._() : _orchestrator = AdLoaderOrchestrator();
 
-  /// A constructor for testing that allows injecting a mock AdLoaderOrchestrator.
+  /// A constructor for testing that allows injecting a mock
+  /// AdLoaderOrchestrator.
   @visibleForTesting
   AdCacheManager.withOrchestrator(this._orchestrator);
 
@@ -117,7 +118,8 @@ class AdCacheManager {
     final cacheKey = _getCacheKey(adUnitIds);
     final ad = _cache.remove(cacheKey);
     AdLogger.debug(
-      'Retrieving ad from cache for AdUnitIds: $adUnitIds. Found: ${ad != null}',
+      'Retrieving ad from cache for AdUnitIds: $adUnitIds. '
+      'Found: ${ad != null}',
     );
     if (ad is T) {
       return ad;

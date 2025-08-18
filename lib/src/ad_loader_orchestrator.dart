@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
-import 'package:google_mobile_ads_async/src/ad_loader.dart';
 import 'package:google_mobile_ads_async/src/ad_waterfall_exception.dart';
+import 'package:google_mobile_ads_async/src/async_ad_loader.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
 
 /// Manages the ad loading process, supporting single requests and waterfalls.
