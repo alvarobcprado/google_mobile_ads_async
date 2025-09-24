@@ -38,7 +38,7 @@ Future<void> _preloadAds() async {
     cacheManager.preloadAd(
       adUnitIds: [bannerAdUnitId],
       type: AdType.banner,
-      size: AdSize.banner,
+      size: AdSize.mediumRectangle,
     ),
   ]);
 }
@@ -171,7 +171,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: NativeAdWidget(
                   // The widget will load the ad using the adUnitIds.
                   adUnitIds: const [nativeAdUnitId],
-                  loadingBuilder: (_) => const CircularProgressIndicator(),
+                  loadingBuilder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                   errorBuilder: (_, error) =>
                       Text('Native ad failed to load: $error'),
                   nativeTemplateStyle: NativeTemplateStyle(
@@ -186,10 +187,28 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 10),
               BannerAdWidget(
                 adUnitIds: const [bannerAdUnitId],
-                size: AdSize.mediumRectangle,
-                loadingBuilder: (_) => const CircularProgressIndicator(),
+                sizeConfig:
+                    const BannerAdSizeConfig.standard(AdSize.mediumRectangle),
+                loadingBuilder: (_) =>
+                    const Center(child: CircularProgressIndicator()),
                 errorBuilder: (_, error) =>
                     Text('Banner ad failed to load: $error'),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Inline Adaptive Banner',
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              BannerAdWidget(
+                adUnitIds: const [bannerAdUnitId],
+                sizeConfig: const BannerAdSizeConfig.inline(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                ),
+                loadingBuilder: (_) =>
+                    const Center(child: CircularProgressIndicator()),
+                errorBuilder: (_, error) =>
+                    Text('Inline adaptive banner failed to load: $error'),
               ),
               const SizedBox(height: 20),
             ],
@@ -201,7 +220,7 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: BannerAdWidget(
         ad: cachedBanner,
         adUnitIds: const [bannerAdUnitId],
-        size: AdSize.banner,
+        sizeConfig: const BannerAdSizeConfig.anchored(),
         errorBuilder: (_, error) =>
             Text('Bottom banner failed to load: $error'),
       ),

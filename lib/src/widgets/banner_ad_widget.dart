@@ -18,12 +18,12 @@ class BannerAdWidget extends StatefulWidget {
     this.ad,
     this.adUnitIds,
     this.adRequest = const AdRequest(),
-    this.size,
+    this.sizeConfig,
     this.loadingBuilder,
     this.errorBuilder,
   }) : assert(
-          ad != null || (adUnitIds != null && size != null),
-          'If ad is not provided, then size and an adUnitIds list must be'
+          ad != null || (adUnitIds != null && sizeConfig != null),
+          'If ad is not provided, then sizeConfig and an adUnitIds list must be'
           ' provided.',
         );
 
@@ -36,8 +36,8 @@ class BannerAdWidget extends StatefulWidget {
   /// The ad request to use when loading an ad.
   final AdRequest adRequest;
 
-  /// The size of the banner ad. Required if loading a new ad.
-  final AdSize? size;
+  /// The configuration for the banner ad's size. Required if loading a new ad.
+  final BannerAdSizeConfig? sizeConfig;
 
   /// A builder for the loading state. If null, a [SizedBox.shrink] is shown.
   final AdLoadingBuilder? loadingBuilder;
@@ -55,6 +55,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   bool _isLoading = false;
   Object? _error;
+  AdSize? _loadedAdSize;
 
   @override
   void initState() {
@@ -62,7 +63,14 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     AdLogger.verbose(
       'initState: ${widget.runtimeType} with AdUnitIds: ${widget.adUnitIds}',
     );
-    _resolveAd();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resolveAd();
+    });
   }
 
   @override
@@ -73,14 +81,18 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       '${widget.adUnitIds}',
     );
     // If the source of the ad changes, we need to re-evaluate.
-    if (widget.ad != oldWidget.ad || widget.adUnitIds != oldWidget.adUnitIds) {
+    if (widget.ad != oldWidget.ad ||
+        widget.adUnitIds != oldWidget.adUnitIds ||
+        widget.sizeConfig != oldWidget.sizeConfig) {
       _disposeInternalAd();
-      _resolveAd();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _resolveAd();
+      });
     }
   }
 
   /// Decides which ad to use based on the priority logic.
-  void _resolveAd() {
+  Future<void> _resolveAd() async {
     // Priority 1: Use the externally provided ad.
     if (widget.ad != null) {
       AdLogger.debug('Using externally provided ad for ${widget.runtimeType}.');
@@ -89,6 +101,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         _isAdManagedInternally = false;
         _isLoading = false;
         _error = null;
+        _loadedAdSize = null;
       });
     }
     // Priority 2: Load an ad internally using adUnitIds.
@@ -98,32 +111,40 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         '${widget.runtimeType}.',
       );
       _isAdManagedInternally = true;
-      _loadAd();
+      await _loadAd();
     }
   }
 
   /// Loads the ad using the adUnitIds.
   Future<void> _loadAd() async {
-    if (!mounted) return;
+    if (!mounted || _isLoading) return;
     AdLogger.debug('Internal ad load started for ${widget.runtimeType}');
 
     setState(() {
       _isLoading = true;
       _error = null;
+      _loadedAdSize = null;
     });
 
     try {
+      final adSize = await widget.sizeConfig!.getAdSize(context);
+      if (adSize == null) {
+        throw ArgumentError('Failed to determine AdSize from sizeConfig.');
+      }
+
       final ad = await GoogleMobileAdsAsync.loadBannerAd(
         adUnitIds: widget.adUnitIds!,
-        size: widget.size!,
+        size: adSize,
         request: widget.adRequest,
       );
 
       if (mounted) {
         AdLogger.info('Internal ad load succeeded for ${widget.runtimeType}');
+        final platformAdSize = await ad.getPlatformAdSize();
         setState(() {
           _ad = ad;
           _isLoading = false;
+          _loadedAdSize = platformAdSize;
         });
       } else {
         AdLogger.warning(
@@ -154,6 +175,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       _ad?.dispose();
     }
     _ad = null;
+    _loadedAdSize = null;
   }
 
   @override
@@ -178,9 +200,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
     final adToDisplay = _ad;
     if (adToDisplay != null) {
+      final displaySize = _loadedAdSize ?? adToDisplay.size;
       return SizedBox(
-        width: adToDisplay.size.width.toDouble(),
-        height: adToDisplay.size.height.toDouble(),
+        width: displaySize.width.toDouble(),
+        height: displaySize.height.toDouble(),
         child: AdWidget(ad: adToDisplay),
       );
     }

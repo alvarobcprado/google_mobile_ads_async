@@ -79,6 +79,7 @@ UI components for easy integration into the widget tree.
 
 - **Responsibility:** Manage the loading and display state of a Banner or Native ad, now with waterfall support.
 - **Logic:** The widgets accept either a single `adUnitId` or a list of `adUnitIds` and use the `AdLoaderOrchestrator` to handle the loading process, displaying the correct UI for loading, error, or success states.
+- **Adaptive Banners:** The `BannerAdWidget` now supports adaptive banners (inline and anchored) through the `BannerAdSizeConfig` class, allowing dynamic sizing based on available width, padding, and optional maximum height.
 
 ### Flow Diagram (Waterfall Loading)
 
@@ -152,12 +153,36 @@ try {
 }
 ```
 
-**Scenario 3: UI Widget with Waterfall**
+**Scenario 3: UI Widget with Standard Banner**
 ```dart
 BannerAdWidget(
   adUnitIds: ['banner_main', 'banner_fallback'],
-  size: AdSize.banner,
+  sizeConfig: BannerAdSizeConfig.standard(AdSize.banner),
   loadingBuilder: (context) => CircularProgressIndicator(),
   errorBuilder: (context, error) => Text('Failed to load banner: $error'),
+)
+```
+
+**Scenario 4: UI Widget with Inline Adaptive Banner**
+```dart
+BannerAdWidget(
+  adUnitIds: ['inline_banner_main', 'inline_banner_fallback'],
+  sizeConfig: BannerAdSizeConfig.inline(
+    padding: EdgeInsets.symmetric(horizontal: 16),
+  ),
+  loadingBuilder: (context) => CircularProgressIndicator(),
+  errorBuilder: (context, error) => Text('Failed to load inline banner: $error'),
+)
+```
+
+**Scenario 5: UI Widget with Anchored Adaptive Banner**
+```dart
+BannerAdWidget(
+  adUnitIds: ['anchored_banner_main', 'anchored_banner_fallback'],
+  sizeConfig: BannerAdSizeConfig.anchored(
+    padding: EdgeInsets.symmetric(horizontal: 16),
+  ),
+  loadingBuilder: (context) => CircularProgressIndicator(),
+  errorBuilder: (context, error) => Text('Failed to load anchored banner: $error'),
 )
 ```

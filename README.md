@@ -22,7 +22,7 @@ The official `google_mobile_ads` package provides a robust foundation for displa
 - **Modern Async API:** Load all ad formats (`Banner`, `Interstitial`, `Rewarded`, etc.) using `async/await`.
 - **Ad Waterfalls:** Provide a list of ad unit IDs to maximize fill rates. The first ad to load successfully is used.
 - **Ad Caching:** Use the `AdCacheManager` to preload ads and reduce latency.
-- **Declarative UI Widgets:** Use `BannerAdWidget` and `NativeAdWidget` to display ads declaratively.
+- **Declarative UI Widgets:** Use `BannerAdWidget` and `NativeAdWidget` to display ads declaratively, including support for **adaptive banners**.
 - **Robust Error Handling:** Get clear, specific exceptions like `AdLoadException` and `AdWaterfallException`.
 - **Full Access to Ad Objects:** Once an ad is loaded, you get the original ad object from `google_mobile_ads` for full control.
 
@@ -104,16 +104,41 @@ try {
 }
 ```
 
-### 4. Using UI Widgets with Waterfalls
+### 4. Using UI Widgets with Waterfalls (Standard and Adaptive Banners)
 
-The `BannerAdWidget` handles the loading lifecycle for you. Just provide the ad unit IDs and optional builders for the loading and error states. The ad is displayed automatically on success.
+The `BannerAdWidget` handles the loading lifecycle for you. Just provide the ad unit IDs and an `AdSizeConfig` for standard banners or adaptive banners, along with optional builders for the loading and error states. The ad is displayed automatically on success.
 
+**Standard Banner:**
 ```dart
 BannerAdWidget(
   adUnitIds: ['banner_main_id', 'banner_fallback_id'],
-  size: AdSize.banner,
+  sizeConfig: BannerAdSizeConfig.standard(AdSize.banner),
   loadingBuilder: (context) => Center(child: CircularProgressIndicator()),
   errorBuilder: (context, error) => Center(child: Text('Failed to load banner: $error')),
+)
+```
+
+**Inline Adaptive Banner:**
+```dart
+BannerAdWidget(
+  adUnitIds: ['inline_banner_main_id', 'inline_banner_fallback_id'],
+  sizeConfig: BannerAdSizeConfig.inline(
+    padding: EdgeInsets.symmetric(horizontal: 16),
+  ),
+  loadingBuilder: (context) => Center(child: CircularProgressIndicator()),
+  errorBuilder: (context, error) => Center(child: Text('Failed to load inline banner: $error')),
+)
+```
+
+**Anchored Adaptive Banner:**
+```dart
+BannerAdWidget(
+  adUnitIds: ['anchored_banner_main_id', 'anchored_banner_fallback_id'],
+  sizeConfig: BannerAdSizeConfig.anchored(
+    padding: EdgeInsets.symmetric(horizontal: 16),
+  ),
+  loadingBuilder: (context) => Center(child: CircularProgressIndicator()),
+  errorBuilder: (context, error) => Center(child: Text('Failed to load anchored banner: $error')),
 )
 ```
 

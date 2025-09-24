@@ -11,6 +11,7 @@ export 'package:logger/logger.dart' show Level;
 export 'src/ad_cache_manager.dart';
 export 'src/ad_load_exception.dart';
 export 'src/ad_waterfall_exception.dart';
+export 'src/banner_ad_size_config.dart';
 export 'src/widgets/ad_builders.dart';
 export 'src/widgets/banner_ad_widget.dart';
 export 'src/widgets/native_ad_widget.dart';
