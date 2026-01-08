@@ -128,6 +128,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
         request: widget.adRequest,
         factoryId: widget.factoryId,
         nativeAdOptions: widget.nativeAdOptions,
+        nativeTemplateStyle: widget.nativeTemplateStyle,
       );
 
       if (mounted) {

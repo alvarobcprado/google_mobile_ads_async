@@ -92,12 +92,14 @@ class GoogleMobileAdsAsync {
     AdRequest? request,
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
+    NativeTemplateStyle? nativeTemplateStyle,
   }) =>
       _orchestrator.loadNativeAd(
         adUnitIds: adUnitIds,
         request: request,
         nativeAdOptions: nativeAdOptions,
         factoryId: factoryId,
+        nativeTemplateStyle: nativeTemplateStyle,
       );
 
   /// Loads an [AppOpenAd] asynchronously.

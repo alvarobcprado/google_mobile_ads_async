@@ -56,6 +56,9 @@ class AdCacheManager {
     required AdType type,
     AdSize? size,
     AdRequest? request,
+    NativeAdOptions? nativeAdOptions,
+    String? factoryId,
+    NativeTemplateStyle? nativeTemplateStyle,
   }) async {
     final cacheKey = _getCacheKey(adUnitIds);
     if (_cache.containsKey(cacheKey)) {
@@ -96,6 +99,9 @@ class AdCacheManager {
           ad = await _orchestrator.loadNativeAd(
             adUnitIds: adUnitIds,
             request: request,
+            nativeAdOptions: nativeAdOptions,
+            factoryId: factoryId,
+            nativeTemplateStyle: nativeTemplateStyle,
           );
         case AdType.appOpen:
           ad = await _orchestrator.loadAppOpenAd(

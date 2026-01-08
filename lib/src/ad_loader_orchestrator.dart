@@ -109,6 +109,7 @@ class AdLoaderOrchestrator {
     AdRequest? request,
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
+    NativeTemplateStyle? nativeTemplateStyle,
   }) {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
@@ -117,6 +118,7 @@ class AdLoaderOrchestrator {
         request: request,
         nativeAdOptions: nativeAdOptions,
         factoryId: factoryId,
+        nativeTemplateStyle: nativeTemplateStyle,
       ),
     );
   }
