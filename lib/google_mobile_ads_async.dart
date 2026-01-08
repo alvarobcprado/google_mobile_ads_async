@@ -1,6 +1,10 @@
 import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:google_mobile_ads_async/google_mobile_ads_async.dart'
+    show AdLoadException;
+import 'package:google_mobile_ads_async/src/ad_load_exception.dart'
+    show AdLoadException;
 import 'package:google_mobile_ads_async/src/ad_loader_orchestrator.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
 import 'package:logger/logger.dart' show Level;
@@ -20,6 +24,26 @@ export 'src/widgets/native_ad_widget.dart';
 /// asynchronous API for loading and managing ads.
 class GoogleMobileAdsAsync {
   static final _orchestrator = AdLoaderOrchestrator();
+
+  /// Global flag to enable/disable all ad loading.
+  ///
+  /// When set to `false`, all ad loading methods will immediately throw
+  /// [AdLoadException] without attempting to load ads from the network.
+  ///
+  /// This is useful for:
+  /// - Premium users who purchased an ad-free experience
+  /// - Testing and debugging
+  /// - Regional compliance (GDPR, COPPA)
+  /// - A/B testing different monetization strategies
+  ///
+  /// Defaults to `true`.
+  ///
+  /// Example:
+  /// ```dart
+  /// // Disable ads for premium users
+  /// GoogleMobileAdsAsync.isAdsEnabled = !userIsPremium;
+  /// ```
+  static bool isAdsEnabled = true;
 
   /// Sets the log level for the package's internal logger.
   ///

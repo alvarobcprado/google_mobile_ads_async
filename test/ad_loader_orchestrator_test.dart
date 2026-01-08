@@ -1,8 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
+import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/ad_loader_orchestrator.dart';
-import 'package:google_mobile_ads_async/src/ad_waterfall_exception.dart';
 import 'package:google_mobile_ads_async/src/async_ad_loader.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -847,6 +845,222 @@ void main() {
           ),
         ),
       );
+    });
+  });
+
+  group('AdLoaderOrchestrator: Global Ad Control (isAdsEnabled)', () {
+    setUp(() {
+      // Reset the global flag before each test
+      GoogleMobileAdsAsync.isAdsEnabled = true;
+    });
+
+    tearDown(() {
+      // Reset back to enabled after each test
+      GoogleMobileAdsAsync.isAdsEnabled = true;
+    });
+
+    test('loadBannerAd throws AdLoadException when ads are disabled', () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = false;
+
+      // Act & Assert
+      final call = orchestrator.loadBannerAd(
+        adUnitIds: [adUnitId1],
+        size: AdSize.banner,
+      );
+
+      await expectLater(
+        call,
+        throwsA(
+          isA<AdLoadException>().having(
+            (e) => e.error.message,
+            'message',
+            'Ad loading is globally disabled',
+          ),
+        ),
+      );
+
+      // Verify mockAdLoader was never called
+      verifyNever(
+        () => mockAdLoader.loadBannerAd(
+          adUnitId: any(named: 'adUnitId'),
+          size: any(named: 'size'),
+          request: any(named: 'request'),
+        ),
+      );
+    });
+
+    test('loadInterstitialAd throws AdLoadException when ads are disabled',
+        () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = false;
+
+      // Act & Assert
+      final call = orchestrator.loadInterstitialAd(adUnitIds: [adUnitId1]);
+
+      await expectLater(
+        call,
+        throwsA(
+          isA<AdLoadException>().having(
+            (e) => e.error.message,
+            'message',
+            'Ad loading is globally disabled',
+          ),
+        ),
+      );
+
+      // Verify mockAdLoader was never called
+      verifyNever(
+        () => mockAdLoader.loadInterstitialAd(
+          adUnitId: any(named: 'adUnitId'),
+          request: any(named: 'request'),
+        ),
+      );
+    });
+
+    test('loadRewardedAd throws AdLoadException when ads are disabled',
+        () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = false;
+
+      // Act & Assert
+      final call = orchestrator.loadRewardedAd(adUnitIds: [adUnitId1]);
+
+      await expectLater(
+        call,
+        throwsA(
+          isA<AdLoadException>().having(
+            (e) => e.error.message,
+            'message',
+            'Ad loading is globally disabled',
+          ),
+        ),
+      );
+
+      // Verify mockAdLoader was never called
+      verifyNever(
+        () => mockAdLoader.loadRewardedAd(
+          adUnitId: any(named: 'adUnitId'),
+          request: any(named: 'request'),
+        ),
+      );
+    });
+
+    test(
+        'loadRewardedInterstitialAd throws AdLoadException when ads '
+        'are disabled', () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = false;
+
+      // Act & Assert
+      final call =
+          orchestrator.loadRewardedInterstitialAd(adUnitIds: [adUnitId1]);
+
+      await expectLater(
+        call,
+        throwsA(
+          isA<AdLoadException>().having(
+            (e) => e.error.message,
+            'message',
+            'Ad loading is globally disabled',
+          ),
+        ),
+      );
+
+      // Verify mockAdLoader was never called
+      verifyNever(
+        () => mockAdLoader.loadRewardedInterstitialAd(
+          adUnitId: any(named: 'adUnitId'),
+          request: any(named: 'request'),
+        ),
+      );
+    });
+
+    test('loadNativeAd throws AdLoadException when ads are disabled', () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = false;
+
+      // Act & Assert
+      final call = orchestrator.loadNativeAd(adUnitIds: [adUnitId1]);
+
+      await expectLater(
+        call,
+        throwsA(
+          isA<AdLoadException>().having(
+            (e) => e.error.message,
+            'message',
+            'Ad loading is globally disabled',
+          ),
+        ),
+      );
+
+      // Verify mockAdLoader was never called
+      verifyNever(
+        () => mockAdLoader.loadNativeAd(
+          adUnitId: any(named: 'adUnitId'),
+          request: any(named: 'request'),
+          nativeAdOptions: any(named: 'nativeAdOptions'),
+          factoryId: any(named: 'factoryId'),
+        ),
+      );
+    });
+
+    test('loadAppOpenAd throws AdLoadException when ads are disabled',
+        () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = false;
+
+      // Act & Assert
+      final call = orchestrator.loadAppOpenAd(adUnitIds: [adUnitId1]);
+
+      await expectLater(
+        call,
+        throwsA(
+          isA<AdLoadException>().having(
+            (e) => e.error.message,
+            'message',
+            'Ad loading is globally disabled',
+          ),
+        ),
+      );
+
+      // Verify mockAdLoader was never called
+      verifyNever(
+        () => mockAdLoader.loadAppOpenAd(
+          adUnitId: any(named: 'adUnitId'),
+          request: any(named: 'request'),
+        ),
+      );
+    });
+
+    test('ads load successfully when isAdsEnabled is true', () async {
+      // Arrange
+      GoogleMobileAdsAsync.isAdsEnabled = true; // explicitly set
+      final mockBannerAd = MockBannerAd();
+
+      when(
+        () => mockAdLoader.loadBannerAd(
+          adUnitId: adUnitId1,
+          size: any(named: 'size'),
+          request: any(named: 'request'),
+        ),
+      ).thenAnswer((_) async => mockBannerAd);
+
+      // Act
+      final ad = await orchestrator.loadBannerAd(
+        adUnitIds: [adUnitId1],
+        size: AdSize.banner,
+      );
+
+      // Assert
+      expect(ad, mockBannerAd);
+      verify(
+        () => mockAdLoader.loadBannerAd(
+          adUnitId: adUnitId1,
+          size: any(named: 'size'),
+          request: any(named: 'request'),
+        ),
+      ).called(1);
     });
   });
 }

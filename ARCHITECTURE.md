@@ -97,6 +97,31 @@ UI components for easy integration into the widget tree.
                                                               +---------------------+
 ```
 
+### Global Ad Control
+
+The package provides a global ad control mechanism through the `isAdsEnabled` static flag on the `GoogleMobileAdsAsync` facade.
+
+**Location:** `GoogleMobileAdsAsync.isAdsEnabled` (default: `true`)
+
+**Flow:**
+1. User sets `GoogleMobileAdsAsync.isAdsEnabled = false`
+2. Any ad loading request (via facade, widgets, or cache manager) goes to `AdLoaderOrchestrator`
+3. The `_loadAdWithWaterfall` method checks the flag before attempting any loads
+4. If disabled: throw `AdLoadException` immediately (no network calls, no SDK overhead)
+5. If enabled: proceed with normal waterfall loading logic
+
+**Benefits:**
+- **Single Point of Control:** One flag controls all ad loading across the entire package
+- **Early Bailout:** Check happens before waterfall iteration, minimizing overhead
+- **Automatic Propagation:** All components (`AdCacheManager`, widgets) automatically respect the flag
+- **Type-Safe:** Uses existing exception infrastructure (`AdLoadException`)
+
+**Use Cases:**
+- Premium user ad-free experience
+- GDPR/COPPA compliance
+- Development/testing environments
+- A/B testing monetization strategies
+
 ---
 
 ## 4. Implementation Steps (TDD Approach)

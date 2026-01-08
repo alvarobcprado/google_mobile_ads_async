@@ -171,6 +171,43 @@ if (rewardedAd != null) {
 - `AdLoadException`: Thrown when a single ad unit fails to load for a specific reason (e.g., network error, no fill).
 - `AdWaterfallException`: Thrown when all ad unit IDs in a waterfall list fail to load. It contains a list of the individual errors.
 
+## Global Ad Control
+
+You can enable or disable all ad loading globally using the `isAdsEnabled` flag:
+
+```dart
+// Disable all ads
+GoogleMobileAdsAsync.isAdsEnabled = false;
+
+// Re-enable ads
+GoogleMobileAdsAsync.isAdsEnabled = true;
+```
+
+When `isAdsEnabled` is set to `false`, all ad loading methods will immediately throw `AdLoadException` without making any network requests. This is useful for:
+
+- **Premium Users:** Disable ads for users who purchased an ad-free experience
+- **Compliance:** GDPR/COPPA compliance based on user consent
+- **Testing:** Disable ads during development or testing
+- **A/B Testing:** Test different monetization strategies
+
+**Example - Premium Users:**
+```dart
+void updateAdState() {
+  final isPremium = UserPreferences.isPremiumUser();
+  GoogleMobileAdsAsync.isAdsEnabled = !isPremium;
+}
+```
+
+**Example - GDPR Compliance:**
+```dart
+void checkConsent() async {
+  final hasConsent = await ConsentManager.getUserConsent();
+  GoogleMobileAdsAsync.isAdsEnabled = hasConsent;
+}
+```
+
+**Note:** When ads are disabled, widgets like `BannerAdWidget` and `NativeAdWidget` will show their error state (or shrink if no `errorBuilder` is provided).
+
 ## Additional Information
 
 - **File Issues:** For any bugs or feature requests, please file an issue on our [GitHub repository](https://github.com/alvarobcprado/google_mobile_ads_async/issues).

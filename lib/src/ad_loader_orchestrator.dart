@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:google_mobile_ads_async/src/ad_load_exception.dart';
-import 'package:google_mobile_ads_async/src/ad_waterfall_exception.dart';
+import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/async_ad_loader.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
 
@@ -23,6 +21,19 @@ class AdLoaderOrchestrator {
     required List<String> adUnitIds,
     required Future<T> Function(String adUnitId) loadFunction,
   }) async {
+    if (!GoogleMobileAdsAsync.isAdsEnabled) {
+      AdLogger.warning('Ad loading is globally disabled. Throwing exception.');
+      return Future.error(
+        AdLoadException(
+          LoadAdError(
+            -1,
+            'GLOBALLY_DISABLED',
+            'Ad loading is globally disabled',
+            null,
+          ),
+        ),
+      );
+    }
     assert(adUnitIds.isNotEmpty, 'adUnitIds list cannot be empty.');
 
     final errors = <AdLoadException>[];
@@ -48,7 +59,7 @@ class AdLoaderOrchestrator {
     required List<String> adUnitIds,
     required AdSize size,
     AdRequest? request,
-  }) {
+  }) async {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
       loadFunction: (adUnitId) => _adLoader.loadBannerAd(
@@ -64,7 +75,7 @@ class AdLoaderOrchestrator {
   Future<InterstitialAd> loadInterstitialAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) {
+  }) async {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
       loadFunction: (adUnitId) => _adLoader.loadInterstitialAd(
@@ -78,7 +89,7 @@ class AdLoaderOrchestrator {
   Future<RewardedAd> loadRewardedAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) {
+  }) async {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
       loadFunction: (adUnitId) => _adLoader.loadRewardedAd(
@@ -93,7 +104,7 @@ class AdLoaderOrchestrator {
   Future<RewardedInterstitialAd> loadRewardedInterstitialAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) {
+  }) async {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
       loadFunction: (adUnitId) => _adLoader.loadRewardedInterstitialAd(
@@ -110,7 +121,7 @@ class AdLoaderOrchestrator {
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
     NativeTemplateStyle? nativeTemplateStyle,
-  }) {
+  }) async {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
       loadFunction: (adUnitId) => _adLoader.loadNativeAd(
@@ -127,7 +138,7 @@ class AdLoaderOrchestrator {
   Future<AppOpenAd> loadAppOpenAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) {
+  }) async {
     return _loadAdWithWaterfall(
       adUnitIds: adUnitIds,
       loadFunction: (adUnitId) => _adLoader.loadAppOpenAd(
