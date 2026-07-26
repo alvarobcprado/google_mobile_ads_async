@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
@@ -22,10 +24,10 @@ class BannerAdWidget extends StatefulWidget {
     this.loadingBuilder,
     this.errorBuilder,
   }) : assert(
-          ad != null || (adUnitIds != null && sizeConfig != null),
-          'If ad is not provided, then sizeConfig and an adUnitIds list must be'
-          ' provided.',
-        );
+         ad != null || (adUnitIds != null && sizeConfig != null),
+         'If ad is not provided, then sizeConfig and an adUnitIds list must be'
+         ' provided.',
+       );
 
   /// A pre-loaded ad to be displayed. It has priority over other load params.
   final BannerAd? ad;
@@ -69,7 +71,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _resolveAd();
+      unawaited(_resolveAd());
     });
   }
 
@@ -86,7 +88,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
         widget.sizeConfig != oldWidget.sizeConfig) {
       _disposeInternalAd();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _resolveAd();
+        unawaited(_resolveAd());
       });
     }
   }
@@ -172,7 +174,10 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
       AdLogger.debug(
         'Disposing internally managed ad for ${widget.runtimeType}.',
       );
-      _ad?.dispose();
+      final ad = _ad;
+      if (ad != null) {
+        unawaited(ad.dispose());
+      }
     }
     _ad = null;
     _loadedAdSize = null;

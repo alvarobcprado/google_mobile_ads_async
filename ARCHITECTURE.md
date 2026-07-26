@@ -4,6 +4,10 @@
 
 This document describes the architecture and implementation steps for the `google_mobile_ads_async` package. The main goal is to create a comprehensive wrapper around the `google_mobile_ads` package, transforming its callback-based API into a modern, asynchronous (`Future`-based) API for all ad formats.
 
+Version 2.0 targets `google_mobile_ads 9.0.0` and supports Android and iOS only.
+Its compatibility baseline is Flutter 3.38.1, Dart 3.10, Android API 23 with
+compile SDK 35 or newer and Kotlin 2.3, and iOS 13.0.
+
 In addition to simplifying ad loading, the package will introduce a **pre-loading (cache) manager**, allowing ads to be loaded in the background and displayed instantly when needed, improving user experience and application performance.
 
 A key feature is the support for **ad waterfalls**, allowing developers to provide a list of ad unit IDs. The system will try to load them in sequence, using the first one that successfully returns an ad, thus maximizing fill rates.
@@ -79,7 +83,7 @@ UI components for easy integration into the widget tree.
 
 - **Responsibility:** Manage the loading and display state of a Banner or Native ad, now with waterfall support.
 - **Logic:** The widgets accept either a single `adUnitId` or a list of `adUnitIds` and use the `AdLoaderOrchestrator` to handle the loading process, displaying the correct UI for loading, error, or success states.
-- **Adaptive Banners:** The `BannerAdWidget` now supports adaptive banners (inline and anchored) through the `BannerAdSizeConfig` class, allowing dynamic sizing based on available width, padding, and optional maximum height.
+- **Adaptive Banners:** The `BannerAdWidget` supports inline adaptive and large anchored adaptive banners through `BannerAdSizeConfig`, allowing dynamic sizing based on available width, padding, and optional maximum height. The anchored configuration delegates to `AdSize.getLargeAnchoredAdaptiveBannerAdSize`.
 
 ### Flow Diagram (Waterfall Loading)
 
@@ -200,7 +204,7 @@ BannerAdWidget(
 )
 ```
 
-**Scenario 5: UI Widget with Anchored Adaptive Banner**
+**Scenario 5: UI Widget with Large Anchored Adaptive Banner**
 ```dart
 BannerAdWidget(
   adUnitIds: ['anchored_banner_main', 'anchored_banner_fallback'],

@@ -28,11 +28,13 @@ class AsyncAdLoader {
       request ?? const AdRequest(),
       BannerAdListener(
         onAdLoaded: (ad) {
+          if (completer.isCompleted) return;
           AdLogger.info('BannerAd loaded successfully. AdUnitId: $adUnitId');
           completer.complete(ad as BannerAd);
         },
         onAdFailedToLoad: (ad, error) {
-          ad.dispose();
+          unawaited(ad.dispose());
+          if (completer.isCompleted) return;
           AdLogger.error(
             'Failed to load BannerAd. AdUnitId: $adUnitId',
             error: error,
@@ -58,12 +60,14 @@ class AsyncAdLoader {
       request ?? const AdRequest(),
       InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          if (completer.isCompleted) return;
           AdLogger.info(
             'InterstitialAd loaded successfully. AdUnitId: $adUnitId',
           );
           completer.complete(ad);
         },
         onAdFailedToLoad: (error) {
+          if (completer.isCompleted) return;
           AdLogger.error(
             'Failed to load InterstitialAd. AdUnitId: $adUnitId',
             error: error,
@@ -87,10 +91,12 @@ class AsyncAdLoader {
       request ?? const AdRequest(),
       RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          if (completer.isCompleted) return;
           AdLogger.info('RewardedAd loaded successfully. AdUnitId: $adUnitId');
           completer.complete(ad);
         },
         onAdFailedToLoad: (error) {
+          if (completer.isCompleted) return;
           AdLogger.error(
             'Failed to load RewardedAd. AdUnitId: $adUnitId',
             error: error,
@@ -116,12 +122,14 @@ class AsyncAdLoader {
       request ?? const AdRequest(),
       RewardedInterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          if (completer.isCompleted) return;
           AdLogger.info(
             'RewardedInterstitialAd loaded successfully. AdUnitId: $adUnitId',
           );
           completer.complete(ad);
         },
         onAdFailedToLoad: (error) {
+          if (completer.isCompleted) return;
           AdLogger.error(
             'Failed to load RewardedInterstitialAd. AdUnitId: $adUnitId',
             error: error,
@@ -150,11 +158,13 @@ class AsyncAdLoader {
       factoryId,
       NativeAdListener(
         onAdLoaded: (ad) {
+          if (completer.isCompleted) return;
           AdLogger.info('NativeAd loaded successfully. AdUnitId: $adUnitId');
           completer.complete(ad as NativeAd);
         },
         onAdFailedToLoad: (ad, error) {
-          ad.dispose();
+          unawaited(ad.dispose());
+          if (completer.isCompleted) return;
           AdLogger.error(
             'Failed to load NativeAd. AdUnitId: $adUnitId',
             error: error,
@@ -179,10 +189,12 @@ class AsyncAdLoader {
       request ?? const AdRequest(),
       AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
+          if (completer.isCompleted) return;
           AdLogger.info('AppOpenAd loaded successfully. AdUnitId: $adUnitId');
           completer.complete(ad);
         },
         onAdFailedToLoad: (error) {
+          if (completer.isCompleted) return;
           AdLogger.error(
             'Failed to load AppOpenAd. AdUnitId: $adUnitId',
             error: error,

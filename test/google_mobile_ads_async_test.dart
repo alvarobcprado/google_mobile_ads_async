@@ -11,8 +11,6 @@ class MockBannerAd extends Mock implements BannerAd {}
 
 class MockInterstitialAd extends Mock implements InterstitialAd {}
 
-class MockRewardedAd extends Mock implements RewardedAd {}
-
 class MockLoadAdError extends Mock implements LoadAdError {
   @override
   String toString() => 'MockLoadAdError';
@@ -41,44 +39,47 @@ void main() {
       cacheManager.disposeAllAds();
     });
 
-    test('preloadAd successfully caches an ad using the orchestrator',
-        () async {
-      // Arrange
-      final mockAd = MockBannerAd();
-      when(
-        () => mockOrchestrator.loadBannerAd(
-          adUnitIds: adUnitIds,
-          size: AdSize.banner,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
+    test(
+      'preloadAd successfully caches an ad using the orchestrator',
+      () async {
+        // Arrange
+        final mockAd = MockBannerAd();
+        when(
+          () => mockOrchestrator.loadBannerAd(
+            adUnitIds: adUnitIds,
+            size: AdSize.banner,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
 
-      // Act
-      await cacheManager.preloadAd(
-        adUnitIds: adUnitIds,
-        type: AdType.banner,
-        size: AdSize.banner,
-      );
-
-      // Assert
-      final cachedAd = cacheManager.getAd<BannerAd>(adUnitIds);
-      expect(cachedAd, equals(mockAd));
-      verify(
-        () => mockOrchestrator.loadBannerAd(
+        // Act
+        await cacheManager.preloadAd(
           adUnitIds: adUnitIds,
+          type: AdType.banner,
           size: AdSize.banner,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-    });
+        );
+
+        // Assert
+        final cachedAd = cacheManager.getAd<BannerAd>(adUnitIds);
+        expect(cachedAd, equals(mockAd));
+        verify(
+          () => mockOrchestrator.loadBannerAd(
+            adUnitIds: adUnitIds,
+            size: AdSize.banner,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+      },
+    );
 
     test('preloadAd does not cache an ad on failure', () async {
       // Arrange
       final mockLoadAdError = MockLoadAdError();
       when(() => mockLoadAdError.message).thenReturn('Failed to load');
       when(() => mockLoadAdError.code).thenReturn(1);
-      final mockError =
-          AdWaterfallException([AdLoadException(mockLoadAdError)]);
+      final mockError = AdWaterfallException([
+        AdLoadException(mockLoadAdError),
+      ]);
 
       when(
         () => mockOrchestrator.loadBannerAd(

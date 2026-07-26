@@ -1,22 +1,22 @@
 name: google_mobile_ads_async
 description: "A powerful, async-first wrapper for the official google_mobile_ads package. Load ads with Futures, implement ad waterfalls, use declarative widgets, and leverage a built-in cache."
-version: 1.0.0
+version: 2.0.0
 homepage: https://github.com/alvarobcprado/google_mobile_ads_async
 repository: https://github.com/alvarobcprado/google_mobile_ads_async
 issue_tracker: https://github.com/alvarobcprado/google_mobile_ads_async/issues
 
 environment:
-  sdk: ">=3.6.0 <4.0.0"
-  flutter: ">=1.17.0"
+  sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.38.1"
 
 dependencies:
   flutter:
     sdk: flutter
-  google_mobile_ads: ^7.0.0
-  logger: ^2.3.0
+  google_mobile_ads: ^9.0.0
+  logger: ^2.7.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mocktail: ^1.0.0
-  very_good_analysis: ^7.0.0
+  mocktail: ^1.0.5
+  very_good_analysis: 10.1.0

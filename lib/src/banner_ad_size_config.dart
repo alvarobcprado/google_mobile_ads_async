@@ -13,23 +13,23 @@ class BannerAdSizeConfig {
   const BannerAdSizeConfig.inline({
     this.padding = EdgeInsets.zero,
     this.maxHeight,
-  })  : size = null,
-        isInlineAdaptive = true;
+  }) : size = null,
+       isInlineAdaptive = true;
 
   /// {@macro banner_ad_size_config}
   /// Creates a configuration for an anchored adaptive banner.
   const BannerAdSizeConfig.anchored({
     this.padding = EdgeInsets.zero,
-  })  : size = null,
-        maxHeight = null,
-        isInlineAdaptive = false;
+  }) : size = null,
+       maxHeight = null,
+       isInlineAdaptive = false;
 
   /// {@macro banner_ad_size_config}
   /// Creates a configuration for a standard banner using a predefined [AdSize].
   const BannerAdSizeConfig.standard(AdSize this.size)
-      : maxHeight = null,
-        isInlineAdaptive = null,
-        padding = EdgeInsets.zero;
+    : maxHeight = null,
+      isInlineAdaptive = null,
+      padding = EdgeInsets.zero;
 
   /// The standard [AdSize] for non-adaptive banners.
   final AdSize? size;
@@ -73,8 +73,8 @@ class BannerAdSizeConfig {
           );
         }
       } else {
-        // Anchored adaptive banner
-        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+        // Large anchored adaptive banner
+        return AdSize.getLargeAnchoredAdaptiveBannerAdSize(
           adWidth.toInt(),
         );
       }

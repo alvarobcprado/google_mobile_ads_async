@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:google_mobile_ads_async/src/ad_loader_orchestrator.dart';
@@ -137,14 +139,17 @@ class AdCacheManager {
   void disposeAd(List<String> adUnitIds) {
     final cacheKey = _getCacheKey(adUnitIds);
     AdLogger.debug('Disposing ad from cache for AdUnitIds: $adUnitIds');
-    _cache.remove(cacheKey)?.dispose();
+    final ad = _cache.remove(cacheKey);
+    if (ad != null) {
+      unawaited(ad.dispose());
+    }
   }
 
   /// Disposes of all ads in the cache.
   void disposeAllAds() {
     AdLogger.info('Disposing all cached ads.');
     for (final ad in _cache.values) {
-      ad.dispose();
+      unawaited(ad.dispose());
     }
     _cache.clear();
   }

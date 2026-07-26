@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// A factory class that creates and loads ads.
@@ -12,12 +14,14 @@ class AdFactory {
     AdRequest request,
     BannerAdListener listener,
   ) {
-    BannerAd(
-      adUnitId: adUnitId,
-      size: size,
-      request: request,
-      listener: listener,
-    ).load();
+    unawaited(
+      BannerAd(
+        adUnitId: adUnitId,
+        size: size,
+        request: request,
+        listener: listener,
+      ).load(),
+    );
   }
 
   /// Loads an [InterstitialAd].
@@ -26,10 +30,12 @@ class AdFactory {
     AdRequest request,
     InterstitialAdLoadCallback adLoadCallback,
   ) {
-    InterstitialAd.load(
-      adUnitId: adUnitId,
-      request: request,
-      adLoadCallback: adLoadCallback,
+    unawaited(
+      InterstitialAd.load(
+        adUnitId: adUnitId,
+        request: request,
+        adLoadCallback: adLoadCallback,
+      ),
     );
   }
 
@@ -39,10 +45,12 @@ class AdFactory {
     AdRequest request,
     RewardedAdLoadCallback rewardedAdLoadCallback,
   ) {
-    RewardedAd.load(
-      adUnitId: adUnitId,
-      request: request,
-      rewardedAdLoadCallback: rewardedAdLoadCallback,
+    unawaited(
+      RewardedAd.load(
+        adUnitId: adUnitId,
+        request: request,
+        rewardedAdLoadCallback: rewardedAdLoadCallback,
+      ),
     );
   }
 
@@ -52,10 +60,12 @@ class AdFactory {
     AdRequest request,
     RewardedInterstitialAdLoadCallback rewardedInterstitialAdLoadCallback,
   ) {
-    RewardedInterstitialAd.load(
-      adUnitId: adUnitId,
-      request: request,
-      rewardedInterstitialAdLoadCallback: rewardedInterstitialAdLoadCallback,
+    unawaited(
+      RewardedInterstitialAd.load(
+        adUnitId: adUnitId,
+        request: request,
+        rewardedInterstitialAdLoadCallback: rewardedInterstitialAdLoadCallback,
+      ),
     );
   }
 
@@ -68,17 +78,19 @@ class AdFactory {
     NativeAdListener listener,
     NativeTemplateStyle? nativeTemplateStyle,
   ) {
-    NativeAd(
-      adUnitId: adUnitId,
-      request: request,
-      nativeAdOptions: nativeAdOptions,
-      factoryId: factoryId,
-      listener: listener,
-      nativeTemplateStyle: factoryId != null
-          ? null
-          : nativeTemplateStyle ??
-              NativeTemplateStyle(templateType: TemplateType.medium),
-    ).load();
+    unawaited(
+      NativeAd(
+        adUnitId: adUnitId,
+        request: request,
+        nativeAdOptions: nativeAdOptions,
+        factoryId: factoryId,
+        listener: listener,
+        nativeTemplateStyle: factoryId != null
+            ? null
+            : nativeTemplateStyle ??
+                  NativeTemplateStyle(templateType: TemplateType.medium),
+      ).load(),
+    );
   }
 
   /// Loads an [AppOpenAd].
@@ -87,10 +99,12 @@ class AdFactory {
     AdRequest request,
     AppOpenAdLoadCallback adLoadCallback,
   ) {
-    AppOpenAd.load(
-      adUnitId: adUnitId,
-      request: request,
-      adLoadCallback: adLoadCallback,
+    unawaited(
+      AppOpenAd.load(
+        adUnitId: adUnitId,
+        request: request,
+        adLoadCallback: adLoadCallback,
+      ),
     );
   }
 }

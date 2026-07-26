@@ -83,85 +83,88 @@ void main() {
       ).called(1);
     });
 
-    test('loadBannerAd with waterfall succeeds on the first adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId1,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
+    test(
+      'loadBannerAd with waterfall succeeds on the first adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId1,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
 
-      // Act
-      final ad = await orchestrator.loadBannerAd(
-        adUnitIds: [adUnitId1, adUnitId2],
-        size: AdSize.banner,
-      );
+        // Act
+        final ad = await orchestrator.loadBannerAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+          size: AdSize.banner,
+        );
 
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId1,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verifyNever(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId2,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      );
-    });
-
-    test('loadBannerAd with waterfall succeeds on the fallback adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId1,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      ).thenThrow(mockError1);
-      when(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId2,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
-
-      // Act
-      final ad = await orchestrator.loadBannerAd(
-        adUnitIds: [adUnitId1, adUnitId2],
-        size: AdSize.banner,
-      );
-
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId1,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verify(
-        () => mockAdLoader.loadBannerAd(
-          adUnitId: adUnitId2,
-          size: any(named: 'size'),
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-    });
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId1,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId2,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        );
+      },
+    );
 
     test(
-        'loadBannerAd with waterfall throws AdWaterfallException if '
+      'loadBannerAd with waterfall succeeds on the fallback adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId1,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        ).thenThrow(mockError1);
+        when(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId2,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
+
+        // Act
+        final ad = await orchestrator.loadBannerAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+          size: AdSize.banner,
+        );
+
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId1,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verify(
+          () => mockAdLoader.loadBannerAd(
+            adUnitId: adUnitId2,
+            size: any(named: 'size'),
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('loadBannerAd with waterfall throws AdWaterfallException if '
         'all adUnitIds fail', () async {
       // Arrange
       when(
@@ -223,74 +226,79 @@ void main() {
       ).called(1);
     });
 
-    test('loadInterstitialAd with waterfall succeeds on the first adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
+    test(
+      'loadInterstitialAd with waterfall succeeds on the first adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
 
-      // Act
-      final ad = await orchestrator
-          .loadInterstitialAd(adUnitIds: [adUnitId1, adUnitId2]);
+        // Act
+        final ad = await orchestrator.loadInterstitialAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
 
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verifyNever(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      );
-    });
-
-    test('loadInterstitialAd with waterfall succeeds on the fallback adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenThrow(mockError1);
-      when(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
-
-      // Act
-      final ad = await orchestrator
-          .loadInterstitialAd(adUnitIds: [adUnitId1, adUnitId2]);
-
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verify(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-    });
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        );
+      },
+    );
 
     test(
-        'loadInterstitialAd with waterfall throws AdWaterfallException '
+      'loadInterstitialAd with waterfall succeeds on the fallback adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenThrow(mockError1);
+        when(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
+
+        // Act
+        final ad = await orchestrator.loadInterstitialAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
+
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verify(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('loadInterstitialAd with waterfall throws AdWaterfallException '
         'if all adUnitIds fail', () async {
       // Arrange
       when(
@@ -307,8 +315,9 @@ void main() {
       ).thenThrow(mockError2);
 
       // Act & Assert
-      final call =
-          orchestrator.loadInterstitialAd(adUnitIds: [adUnitId1, adUnitId2]);
+      final call = orchestrator.loadInterstitialAd(
+        adUnitIds: [adUnitId1, adUnitId2],
+      );
 
       expect(
         call,
@@ -348,74 +357,79 @@ void main() {
       ).called(1);
     });
 
-    test('loadRewardedAd with waterfall succeeds on the first adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
+    test(
+      'loadRewardedAd with waterfall succeeds on the first adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
 
-      // Act
-      final ad =
-          await orchestrator.loadRewardedAd(adUnitIds: [adUnitId1, adUnitId2]);
+        // Act
+        final ad = await orchestrator.loadRewardedAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
 
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verifyNever(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      );
-    });
-
-    test('loadRewardedAd with waterfall succeeds on the fallback adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenThrow(mockError1);
-      when(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
-
-      // Act
-      final ad =
-          await orchestrator.loadRewardedAd(adUnitIds: [adUnitId1, adUnitId2]);
-
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verify(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-    });
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        );
+      },
+    );
 
     test(
-        'loadRewardedAd with waterfall throws AdWaterfallException '
+      'loadRewardedAd with waterfall succeeds on the fallback adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenThrow(mockError1);
+        when(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
+
+        // Act
+        final ad = await orchestrator.loadRewardedAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
+
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verify(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('loadRewardedAd with waterfall throws AdWaterfallException '
         'if all adUnitIds fail', () async {
       // Arrange
       when(
@@ -432,8 +446,9 @@ void main() {
       ).thenThrow(mockError2);
 
       // Act & Assert
-      final call =
-          orchestrator.loadRewardedAd(adUnitIds: [adUnitId1, adUnitId2]);
+      final call = orchestrator.loadRewardedAd(
+        adUnitIds: [adUnitId1, adUnitId2],
+      );
 
       expect(
         call,
@@ -451,32 +466,34 @@ void main() {
   group('AdLoaderOrchestrator: RewardedInterstitialAd', () {
     final mockAd = MockRewardedInterstitialAd();
 
-    test('loadRewardedInterstitialAd with a single adUnitId succeeds',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadRewardedInterstitialAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
-
-      // Act
-      final ad =
-          await orchestrator.loadRewardedInterstitialAd(adUnitIds: [adUnitId1]);
-
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadRewardedInterstitialAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-    });
-
     test(
-        'loadRewardedInterstitialAd with waterfall succeeds on the '
+      'loadRewardedInterstitialAd with a single adUnitId succeeds',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadRewardedInterstitialAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
+
+        // Act
+        final ad = await orchestrator.loadRewardedInterstitialAd(
+          adUnitIds: [adUnitId1],
+        );
+
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadRewardedInterstitialAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('loadRewardedInterstitialAd with waterfall succeeds on the '
         'first adUnitId', () async {
       // Arrange
       when(
@@ -487,8 +504,9 @@ void main() {
       ).thenAnswer((_) async => mockAd);
 
       // Act
-      final ad = await orchestrator
-          .loadRewardedInterstitialAd(adUnitIds: [adUnitId1, adUnitId2]);
+      final ad = await orchestrator.loadRewardedInterstitialAd(
+        adUnitIds: [adUnitId1, adUnitId2],
+      );
 
       // Assert
       expect(ad, mockAd);
@@ -506,8 +524,7 @@ void main() {
       );
     });
 
-    test(
-        'loadRewardedInterstitialAd with waterfall succeeds on the '
+    test('loadRewardedInterstitialAd with waterfall succeeds on the '
         'fallback adUnitId', () async {
       // Arrange
       when(
@@ -524,8 +541,9 @@ void main() {
       ).thenAnswer((_) async => mockAd);
 
       // Act
-      final ad = await orchestrator
-          .loadRewardedInterstitialAd(adUnitIds: [adUnitId1, adUnitId2]);
+      final ad = await orchestrator.loadRewardedInterstitialAd(
+        adUnitIds: [adUnitId1, adUnitId2],
+      );
 
       // Assert
       expect(ad, mockAd);
@@ -543,8 +561,7 @@ void main() {
       ).called(1);
     });
 
-    test(
-        'loadRewardedInterstitialAd with waterfall throws '
+    test('loadRewardedInterstitialAd with waterfall throws '
         'AdWaterfallException if all adUnitIds fail', () async {
       // Arrange
       when(
@@ -561,8 +578,9 @@ void main() {
       ).thenThrow(mockError2);
 
       // Act & Assert
-      final call = orchestrator
-          .loadRewardedInterstitialAd(adUnitIds: [adUnitId1, adUnitId2]);
+      final call = orchestrator.loadRewardedInterstitialAd(
+        adUnitIds: [adUnitId1, adUnitId2],
+      );
 
       expect(
         call,
@@ -606,88 +624,93 @@ void main() {
       ).called(1);
     });
 
-    test('loadNativeAd with waterfall succeeds on the first adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      ).thenAnswer((_) async => mockAd);
+    test(
+      'loadNativeAd with waterfall succeeds on the first adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        ).thenAnswer((_) async => mockAd);
 
-      // Act
-      final ad =
-          await orchestrator.loadNativeAd(adUnitIds: [adUnitId1, adUnitId2]);
+        // Act
+        final ad = await orchestrator.loadNativeAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
 
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      ).called(1);
-      verifyNever(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      );
-    });
-
-    test('loadNativeAd with waterfall succeeds on the fallback adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      ).thenThrow(mockError1);
-      when(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      ).thenAnswer((_) async => mockAd);
-
-      // Act
-      final ad =
-          await orchestrator.loadNativeAd(adUnitIds: [adUnitId1, adUnitId2]);
-
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      ).called(1);
-      verify(
-        () => mockAdLoader.loadNativeAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-          nativeAdOptions: any(named: 'nativeAdOptions'),
-          factoryId: any(named: 'factoryId'),
-        ),
-      ).called(1);
-    });
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        );
+      },
+    );
 
     test(
-        'loadNativeAd with waterfall throws AdWaterfallException if all'
+      'loadNativeAd with waterfall succeeds on the fallback adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        ).thenThrow(mockError1);
+        when(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        ).thenAnswer((_) async => mockAd);
+
+        // Act
+        final ad = await orchestrator.loadNativeAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
+
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        ).called(1);
+        verify(
+          () => mockAdLoader.loadNativeAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+            nativeAdOptions: any(named: 'nativeAdOptions'),
+            factoryId: any(named: 'factoryId'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('loadNativeAd with waterfall throws AdWaterfallException if all'
         ' adUnitIds fail', () async {
       // Arrange
       when(
@@ -748,74 +771,79 @@ void main() {
       ).called(1);
     });
 
-    test('loadAppOpenAd with waterfall succeeds on the first adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
+    test(
+      'loadAppOpenAd with waterfall succeeds on the first adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
 
-      // Act
-      final ad =
-          await orchestrator.loadAppOpenAd(adUnitIds: [adUnitId1, adUnitId2]);
+        // Act
+        final ad = await orchestrator.loadAppOpenAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
 
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verifyNever(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      );
-    });
-
-    test('loadAppOpenAd with waterfall succeeds on the fallback adUnitId',
-        () async {
-      // Arrange
-      when(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).thenThrow(mockError1);
-      when(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      ).thenAnswer((_) async => mockAd);
-
-      // Act
-      final ad =
-          await orchestrator.loadAppOpenAd(adUnitIds: [adUnitId1, adUnitId2]);
-
-      // Assert
-      expect(ad, mockAd);
-      verify(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId1,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-      verify(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: adUnitId2,
-          request: any(named: 'request'),
-        ),
-      ).called(1);
-    });
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        );
+      },
+    );
 
     test(
-        'loadAppOpenAd with waterfall throws AdWaterfallException if '
+      'loadAppOpenAd with waterfall succeeds on the fallback adUnitId',
+      () async {
+        // Arrange
+        when(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).thenThrow(mockError1);
+        when(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        ).thenAnswer((_) async => mockAd);
+
+        // Act
+        final ad = await orchestrator.loadAppOpenAd(
+          adUnitIds: [adUnitId1, adUnitId2],
+        );
+
+        // Assert
+        expect(ad, mockAd);
+        verify(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId1,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+        verify(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: adUnitId2,
+            request: any(named: 'request'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('loadAppOpenAd with waterfall throws AdWaterfallException if '
         'all adUnitIds fail', () async {
       // Arrange
       when(
@@ -832,8 +860,9 @@ void main() {
       ).thenThrow(mockError2);
 
       // Act & Assert
-      final call =
-          orchestrator.loadAppOpenAd(adUnitIds: [adUnitId1, adUnitId2]);
+      final call = orchestrator.loadAppOpenAd(
+        adUnitIds: [adUnitId1, adUnitId2],
+      );
 
       expect(
         call,
@@ -890,71 +919,75 @@ void main() {
       );
     });
 
-    test('loadInterstitialAd throws AdLoadException when ads are disabled',
-        () async {
-      // Arrange
-      GoogleMobileAdsAsync.isAdsEnabled = false;
+    test(
+      'loadInterstitialAd throws AdLoadException when ads are disabled',
+      () async {
+        // Arrange
+        GoogleMobileAdsAsync.isAdsEnabled = false;
 
-      // Act & Assert
-      final call = orchestrator.loadInterstitialAd(adUnitIds: [adUnitId1]);
+        // Act & Assert
+        final call = orchestrator.loadInterstitialAd(adUnitIds: [adUnitId1]);
 
-      await expectLater(
-        call,
-        throwsA(
-          isA<AdLoadException>().having(
-            (e) => e.error.message,
-            'message',
-            'Ad loading is globally disabled',
+        await expectLater(
+          call,
+          throwsA(
+            isA<AdLoadException>().having(
+              (e) => e.error.message,
+              'message',
+              'Ad loading is globally disabled',
+            ),
           ),
-        ),
-      );
+        );
 
-      // Verify mockAdLoader was never called
-      verifyNever(
-        () => mockAdLoader.loadInterstitialAd(
-          adUnitId: any(named: 'adUnitId'),
-          request: any(named: 'request'),
-        ),
-      );
-    });
-
-    test('loadRewardedAd throws AdLoadException when ads are disabled',
-        () async {
-      // Arrange
-      GoogleMobileAdsAsync.isAdsEnabled = false;
-
-      // Act & Assert
-      final call = orchestrator.loadRewardedAd(adUnitIds: [adUnitId1]);
-
-      await expectLater(
-        call,
-        throwsA(
-          isA<AdLoadException>().having(
-            (e) => e.error.message,
-            'message',
-            'Ad loading is globally disabled',
+        // Verify mockAdLoader was never called
+        verifyNever(
+          () => mockAdLoader.loadInterstitialAd(
+            adUnitId: any(named: 'adUnitId'),
+            request: any(named: 'request'),
           ),
-        ),
-      );
-
-      // Verify mockAdLoader was never called
-      verifyNever(
-        () => mockAdLoader.loadRewardedAd(
-          adUnitId: any(named: 'adUnitId'),
-          request: any(named: 'request'),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     test(
-        'loadRewardedInterstitialAd throws AdLoadException when ads '
+      'loadRewardedAd throws AdLoadException when ads are disabled',
+      () async {
+        // Arrange
+        GoogleMobileAdsAsync.isAdsEnabled = false;
+
+        // Act & Assert
+        final call = orchestrator.loadRewardedAd(adUnitIds: [adUnitId1]);
+
+        await expectLater(
+          call,
+          throwsA(
+            isA<AdLoadException>().having(
+              (e) => e.error.message,
+              'message',
+              'Ad loading is globally disabled',
+            ),
+          ),
+        );
+
+        // Verify mockAdLoader was never called
+        verifyNever(
+          () => mockAdLoader.loadRewardedAd(
+            adUnitId: any(named: 'adUnitId'),
+            request: any(named: 'request'),
+          ),
+        );
+      },
+    );
+
+    test('loadRewardedInterstitialAd throws AdLoadException when ads '
         'are disabled', () async {
       // Arrange
       GoogleMobileAdsAsync.isAdsEnabled = false;
 
       // Act & Assert
-      final call =
-          orchestrator.loadRewardedInterstitialAd(adUnitIds: [adUnitId1]);
+      final call = orchestrator.loadRewardedInterstitialAd(
+        adUnitIds: [adUnitId1],
+      );
 
       await expectLater(
         call,
@@ -1005,33 +1038,35 @@ void main() {
       );
     });
 
-    test('loadAppOpenAd throws AdLoadException when ads are disabled',
-        () async {
-      // Arrange
-      GoogleMobileAdsAsync.isAdsEnabled = false;
+    test(
+      'loadAppOpenAd throws AdLoadException when ads are disabled',
+      () async {
+        // Arrange
+        GoogleMobileAdsAsync.isAdsEnabled = false;
 
-      // Act & Assert
-      final call = orchestrator.loadAppOpenAd(adUnitIds: [adUnitId1]);
+        // Act & Assert
+        final call = orchestrator.loadAppOpenAd(adUnitIds: [adUnitId1]);
 
-      await expectLater(
-        call,
-        throwsA(
-          isA<AdLoadException>().having(
-            (e) => e.error.message,
-            'message',
-            'Ad loading is globally disabled',
+        await expectLater(
+          call,
+          throwsA(
+            isA<AdLoadException>().having(
+              (e) => e.error.message,
+              'message',
+              'Ad loading is globally disabled',
+            ),
           ),
-        ),
-      );
+        );
 
-      // Verify mockAdLoader was never called
-      verifyNever(
-        () => mockAdLoader.loadAppOpenAd(
-          adUnitId: any(named: 'adUnitId'),
-          request: any(named: 'request'),
-        ),
-      );
-    });
+        // Verify mockAdLoader was never called
+        verifyNever(
+          () => mockAdLoader.loadAppOpenAd(
+            adUnitId: any(named: 'adUnitId'),
+            request: any(named: 'request'),
+          ),
+        );
+      },
+    );
 
     test('ads load successfully when isAdsEnabled is true', () async {
       // Arrange

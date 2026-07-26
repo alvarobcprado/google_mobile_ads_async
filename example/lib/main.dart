@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 
@@ -81,18 +83,22 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
 
     if (ad != null) {
-      ad.show();
+      unawaited(ad.show());
       // Preload the next one.
-      AdCacheManager.instance.preloadAd(
-        adUnitIds: [interstitialAdUnitId],
-        type: AdType.interstitial,
+      unawaited(
+        AdCacheManager.instance.preloadAd(
+          adUnitIds: [interstitialAdUnitId],
+          type: AdType.interstitial,
+        ),
       );
     } else {
       _showSnackBar('Interstitial ad is not ready yet.');
       // Optionally, load the ad if it wasn't in the cache.
-      AdCacheManager.instance.preloadAd(
-        adUnitIds: [interstitialAdUnitId],
-        type: AdType.interstitial,
+      unawaited(
+        AdCacheManager.instance.preloadAd(
+          adUnitIds: [interstitialAdUnitId],
+          type: AdType.interstitial,
+        ),
       );
     }
   }
@@ -102,22 +108,28 @@ class _MyHomePageState extends State<MyHomePage> {
     final ad = AdCacheManager.instance.getAd<RewardedAd>([rewardedAdUnitId]);
 
     if (ad != null) {
-      ad.show(
-        onUserEarnedReward: (ad, reward) {
-          _showSnackBar('Reward earned: ${reward.amount} ${reward.type}');
-        },
+      unawaited(
+        ad.show(
+          onUserEarnedReward: (ad, reward) {
+            _showSnackBar('Reward earned: ${reward.amount} ${reward.type}');
+          },
+        ),
       );
       // Preload the next one.
-      AdCacheManager.instance.preloadAd(
-        adUnitIds: [rewardedAdUnitId],
-        type: AdType.rewarded,
+      unawaited(
+        AdCacheManager.instance.preloadAd(
+          adUnitIds: [rewardedAdUnitId],
+          type: AdType.rewarded,
+        ),
       );
     } else {
       _showSnackBar('Rewarded ad is not ready yet.');
       // Optionally, load the ad if it wasn't in the cache.
-      AdCacheManager.instance.preloadAd(
-        adUnitIds: [rewardedAdUnitId],
-        type: AdType.rewarded,
+      unawaited(
+        AdCacheManager.instance.preloadAd(
+          adUnitIds: [rewardedAdUnitId],
+          type: AdType.rewarded,
+        ),
       );
     }
   }
@@ -130,10 +142,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    GoogleMobileAdsAsync.isAdsEnabled = false;
     // Try to get the cached banner ad.
-    final cachedBanner =
-        AdCacheManager.instance.getAd<BannerAd>([bannerAdUnitId]);
+    final cachedBanner = AdCacheManager.instance.getAd<BannerAd>([
+      bannerAdUnitId,
+    ]);
 
     return Scaffold(
       appBar: AppBar(
@@ -183,8 +195,9 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 10),
               BannerAdWidget(
                 adUnitIds: const [bannerAdUnitId],
-                sizeConfig:
-                    const BannerAdSizeConfig.standard(AdSize.mediumRectangle),
+                sizeConfig: const BannerAdSizeConfig.standard(
+                  AdSize.mediumRectangle,
+                ),
                 loadingBuilder: (_) =>
                     const Center(child: CircularProgressIndicator()),
               ),

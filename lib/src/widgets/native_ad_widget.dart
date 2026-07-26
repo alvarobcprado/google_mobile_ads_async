@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads_async/google_mobile_ads_async.dart';
 import 'package:google_mobile_ads_async/src/utils/logger.dart';
@@ -24,9 +26,9 @@ class NativeAdWidget extends StatefulWidget {
     this.loadingBuilder,
     this.errorBuilder,
   }) : assert(
-          ad != null || adUnitIds != null,
-          'Either ad or an adUnitIds list must be provided.',
-        );
+         ad != null || adUnitIds != null,
+         'Either ad or an adUnitIds list must be provided.',
+       );
 
   /// A pre-loaded ad to be displayed. It has priority over other load params.
   final NativeAd? ad;
@@ -108,7 +110,7 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
         '${widget.runtimeType}.',
       );
       _isAdManagedInternally = true;
-      _loadAd();
+      unawaited(_loadAd());
     }
   }
 
@@ -163,7 +165,10 @@ class _NativeAdWidgetState extends State<NativeAdWidget> {
       AdLogger.debug(
         'Disposing internally managed ad for ${widget.runtimeType}.',
       );
-      _ad?.dispose();
+      final ad = _ad;
+      if (ad != null) {
+        unawaited(ad.dispose());
+      }
     }
     _ad = null;
   }

@@ -30,11 +30,36 @@ The official `google_mobile_ads` package provides a robust foundation for displa
 
 ### 1. Prerequisites
 
-This package is a wrapper and depends on the official `google_mobile_ads` package. **You must complete all the platform setup steps (iOS and Android) for that package first.**
+Version 2.x wraps `google_mobile_ads 9.x` and supports Android and iOS.
+Desktop and web are not supported by the official SDK.
 
-This includes updating your `Info.plist` and `AndroidManifest.xml`.
+| Requirement | Minimum |
+| --- | --- |
+| Flutter | 3.38.1 |
+| Dart | 3.10.0 |
+| Android | API 23, compile SDK 35, Kotlin 2.3 |
+| iOS | 13.0 |
 
-➡️ **Follow the official `google_mobile_ads` installation guide:** [pub.dev/packages/google_mobile_ads](https://pub.dev/packages/google_mobile_ads)
+You must also configure your AdMob application ID on each target platform.
+Add `com.google.android.gms.ads.APPLICATION_ID` inside the `<application>`
+element of `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<meta-data
+    android:name="com.google.android.gms.ads.APPLICATION_ID"
+    android:value="ca-app-pub-################~##########" />
+```
+
+Add `GADApplicationIdentifier` to `ios/Runner/Info.plist`:
+
+```xml
+<key>GADApplicationIdentifier</key>
+<string>ca-app-pub-################~##########</string>
+```
+
+Follow the official
+[`google_mobile_ads` setup guide](https://developers.google.com/admob/flutter/quick-start)
+and use Google's sample IDs while testing.
 
 ### 2. Installation
 
@@ -130,7 +155,7 @@ BannerAdWidget(
 )
 ```
 
-**Anchored Adaptive Banner:**
+**Large Anchored Adaptive Banner:**
 ```dart
 BannerAdWidget(
   adUnitIds: ['anchored_banner_main_id', 'anchored_banner_fallback_id'],
@@ -141,6 +166,9 @@ BannerAdWidget(
   errorBuilder: (context, error) => Center(child: Text('Failed to load anchored banner: $error')),
 )
 ```
+
+`BannerAdSizeConfig.anchored` uses the current
+`getLargeAnchoredAdaptiveBannerAdSize` API from the official SDK.
 
 ### 5. Pre-loading Ads with AdCacheManager
 

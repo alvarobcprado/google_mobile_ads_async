@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:google_mobile_ads_async/google_mobile_ads_async.dart'
-    show AdLoadException;
 import 'package:google_mobile_ads_async/src/ad_load_exception.dart'
     show AdLoadException;
 import 'package:google_mobile_ads_async/src/ad_loader_orchestrator.dart';
@@ -61,12 +59,11 @@ class GoogleMobileAdsAsync {
     required List<String> adUnitIds,
     required AdSize size,
     AdRequest? request,
-  }) =>
-      _orchestrator.loadBannerAd(
-        adUnitIds: adUnitIds,
-        size: size,
-        request: request,
-      );
+  }) => _orchestrator.loadBannerAd(
+    adUnitIds: adUnitIds,
+    size: size,
+    request: request,
+  );
 
   /// Loads an [InterstitialAd] asynchronously.
   ///
@@ -75,11 +72,10 @@ class GoogleMobileAdsAsync {
   static Future<InterstitialAd> loadInterstitialAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) =>
-      _orchestrator.loadInterstitialAd(
-        adUnitIds: adUnitIds,
-        request: request,
-      );
+  }) => _orchestrator.loadInterstitialAd(
+    adUnitIds: adUnitIds,
+    request: request,
+  );
 
   /// Loads a [RewardedAd] asynchronously.
   ///
@@ -88,11 +84,10 @@ class GoogleMobileAdsAsync {
   static Future<RewardedAd> loadRewardedAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) =>
-      _orchestrator.loadRewardedAd(
-        adUnitIds: adUnitIds,
-        request: request,
-      );
+  }) => _orchestrator.loadRewardedAd(
+    adUnitIds: adUnitIds,
+    request: request,
+  );
 
   /// Loads a [RewardedInterstitialAd] asynchronously.
   ///
@@ -101,11 +96,10 @@ class GoogleMobileAdsAsync {
   static Future<RewardedInterstitialAd> loadRewardedInterstitialAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) =>
-      _orchestrator.loadRewardedInterstitialAd(
-        adUnitIds: adUnitIds,
-        request: request,
-      );
+  }) => _orchestrator.loadRewardedInterstitialAd(
+    adUnitIds: adUnitIds,
+    request: request,
+  );
 
   /// Loads a [NativeAd] asynchronously.
   ///
@@ -117,14 +111,13 @@ class GoogleMobileAdsAsync {
     NativeAdOptions? nativeAdOptions,
     String? factoryId,
     NativeTemplateStyle? nativeTemplateStyle,
-  }) =>
-      _orchestrator.loadNativeAd(
-        adUnitIds: adUnitIds,
-        request: request,
-        nativeAdOptions: nativeAdOptions,
-        factoryId: factoryId,
-        nativeTemplateStyle: nativeTemplateStyle,
-      );
+  }) => _orchestrator.loadNativeAd(
+    adUnitIds: adUnitIds,
+    request: request,
+    nativeAdOptions: nativeAdOptions,
+    factoryId: factoryId,
+    nativeTemplateStyle: nativeTemplateStyle,
+  );
 
   /// Loads an [AppOpenAd] asynchronously.
   ///
@@ -133,9 +126,8 @@ class GoogleMobileAdsAsync {
   static Future<AppOpenAd> loadAppOpenAd({
     required List<String> adUnitIds,
     AdRequest? request,
-  }) =>
-      _orchestrator.loadAppOpenAd(
-        adUnitIds: adUnitIds,
-        request: request,
-      );
+  }) => _orchestrator.loadAppOpenAd(
+    adUnitIds: adUnitIds,
+    request: request,
+  );
 }
